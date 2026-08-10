@@ -9,6 +9,7 @@ import numerology from './numerology-81.json';
 import ganzhi from './ganzhi.json';
 import hiddenStems from './hidden-stems.json';
 import locations from './locations.json';
+import yongshen from './yongshen.json';
 import dstTaiwan from './dst-taiwan.json';
 
 interface StrokeBlock {
@@ -256,6 +257,64 @@ export const CLASSICAL_HIDDEN_STEMS: Record<string, string[]> = Object.fromEntri
 );
 export const HIDDEN_STEMS_SOURCE = hiddenStems.source;
 export const HIDDEN_STEMS_CONFLICTS = hiddenStems.conflicts as string[];
+
+// --- 用神 -------------------------------------------------------------------
+
+/** 月令五行狀態。`旺`／`相` 視為得令。 */
+export type WangXiangState = '旺' | '相' | '休' | '囚' | '死';
+export type WangXiangSeason = '春' | '夏' | '六月' | '秋' | '冬';
+/** 調候用的四季，與 `WangXiangSeason` 的五季制刻意不同——各自忠於各自的原文。 */
+export type TiaohouSeason = '春' | '夏' | '秋' | '冬';
+
+const wangXiang = yongshen.wangXiang;
+
+export const WANGXIANG_SEASON_OF_BRANCH = wangXiang.seasonOfBranch as Record<
+  string,
+  WangXiangSeason | undefined
+>;
+export const WANGXIANG_STATES = wangXiang.states as Record<
+  WangXiangSeason,
+  Record<WangXiangState, Element>
+>;
+export const WANGXIANG_SOURCE = wangXiang.source;
+
+/** 某月支下、某五行的旺相休囚死；月支不在表中回 undefined（不猜）。 */
+export function wangXiangOf(monthBranch: string, element: Element): WangXiangState | undefined {
+  const season = WANGXIANG_SEASON_OF_BRANCH[monthBranch];
+  if (!season) return undefined;
+  const states = WANGXIANG_STATES[season];
+  return (Object.keys(states) as WangXiangState[]).find((state) => states[state] === element);
+}
+
+export interface TiaohouEntry {
+  /** 該季所缺、調候要補的五行；春秋兩季原文為條件式敘述，故無此欄。 */
+  need?: Element;
+  /** 依據的原文（簡體，照抄自維基文庫本）。 */
+  text: string;
+  note?: string;
+}
+
+const tiaohou = yongshen.tiaohou;
+
+export const TIAOHOU_SEASON_OF_BRANCH = tiaohou.seasonOfBranch as Record<
+  string,
+  TiaohouSeason | undefined
+>;
+export const TIAOHOU_ENTRIES = tiaohou.entries as Record<
+  Element,
+  Record<TiaohouSeason, TiaohouEntry>
+>;
+export const TIAOHOU_SOURCE = tiaohou.source;
+
+/** 日主五行 × 出生月支 → 調候條目；月支不在表中回 undefined。 */
+export function tiaohouOf(dayMasterElement: Element, monthBranch: string): TiaohouEntry | undefined {
+  const season = TIAOHOU_SEASON_OF_BRANCH[monthBranch];
+  if (!season) return undefined;
+  return TIAOHOU_ENTRIES[dayMasterElement][season];
+}
+
+export const STRENGTH_RULE = yongshen.strength;
+export const YONGSHEN_CONFLICTS = yongshen.conflicts as string[];
 
 // --- 字根 -------------------------------------------------------------------
 

@@ -10,6 +10,8 @@ import {
   LOCATION_SOURCE,
   NUMEROLOGY_SOURCE,
   STANDARD_MERIDIAN,
+  TIAOHOU_SOURCE,
+  WANGXIANG_SOURCE,
   ZODIAC_SOURCE,
   countyOf,
 } from './data/index.ts';
@@ -17,6 +19,8 @@ import { analyse } from './engine/index.ts';
 import type { Analysis, CharVerdict, Element, Grid, Luck } from './engine/index.ts';
 import { baziChart } from './bazi/chart.ts';
 import type { BaziChart } from './bazi/chart.ts';
+import { yongShen } from './bazi/yongshen.ts';
+import type { YongShenResult } from './bazi/yongshen.ts';
 import { correctBirthTime } from './bazi/time-correction.ts';
 import type { BirthPlaceInput, TimeCorrection } from './bazi/time-correction.ts';
 import type { LocalDateTime } from './bazi/pillars.ts';
@@ -82,6 +86,18 @@ function sourcesSection(): string {
       '立春時刻',
       `${LICHUN_SOURCE.algorithm}。${LICHUN_SOURCE.deltaT}。已對照 ${LICHUN_SOURCE.verifiedAgainst}`,
       LICHUN_SOURCE.verifiedAgainstUrl,
+    ],
+    [
+      '用神・月令旺相休囚死',
+      `${WANGXIANG_SOURCE.book}。本站以日主五行在月令為「旺」或「相」即得令；` +
+        `得令另有臨官帝旺說、月支藏干說、分日司令說，分歧記於資料檔的 conflicts。`,
+      WANGXIANG_SOURCE.url,
+    ],
+    [
+      '用神・四季調候',
+      `${TIAOHOU_SOURCE.book}。只有冬（補火）、夏（補水）兩季驅動判定——那是五行總論裡` +
+        `五個五行一致的部分；春秋原文為條件式敘述，只列原文供參，不做調候修正。${TIAOHOU_SOURCE.note}`,
+      TIAOHOU_SOURCE.url,
     ],
     [
       '縣市經度（真太陽時校正）',
@@ -239,6 +255,80 @@ function chartSection(chart: BaziChart, lateZiSwitchesDay: boolean): string {
     </section>`;
 }
 
+function yongShenSection(y: YongShenResult): string {
+  const chips = (elements: Element[], cls: string) =>
+    elements.map((e) => `<span class="tag ${cls}">${esc(e)}</span>`).join(' ');
+
+  return `
+    <section class="card">
+      <h2 class="section__title">
+        <span>用神</span>
+        <span class="section__note">扶抑為主 ＋ 調候修正 ＋ 從格偵測</span>
+      </h2>
+
+      <p class="conversion">
+        <span>日主 <strong>${esc(y.dayMaster.stem)}（${esc(y.dayMaster.element)}）</strong></span>
+        <span class="tag ${y.strength.strong ? 'tag--bad' : 'tag--mid'}">
+          ${y.strength.strong ? '身強' : '身弱'}
+        </span>
+        <span class="section__note">
+          得令／得地／得勢滿足 ${y.strength.satisfiedCount} 項；加權分數 ${y.strength.score}（僅供顯示，不用來下結論）
+        </span>
+      </p>
+
+      <ul class="dist-rows">
+        <li class="dist-row"><span class="dist-row__label">喜用</span><span>${chips(y.favor, 'tag--good')}</span></li>
+        <li class="dist-row"><span class="dist-row__label">忌神</span><span>${chips(y.avoid, 'tag--bad')}</span></li>
+      </ul>
+
+      ${
+        y.tiaohou.conflictsWithFuyi
+          ? `<p class="notice">${esc(y.tiaohou.detail)}
+              調候要的 <strong>${esc(y.tiaohou.need ?? '')}</strong> 仍列在忌神裡——這是流派差異，
+              本站不替你仲裁；若你認同調候派，可用下方按鈕改判。</p>`
+          : ''
+      }
+      ${
+        y.congGe.suspected
+          ? `<p class="notice"><strong>${esc(y.congGe.kind ?? '')}</strong>　${esc(y.congGe.detail)}</p>`
+          : ''
+      }
+      ${
+        y.overridden
+          ? `<p class="notice">目前顯示的是<strong>你手動指定</strong>的用神。${
+              y.favor.length === 0
+                ? '你把五行全部取消了，等於「沒有喜用、五行全忌」——這是合法的人工判斷，但幾乎可以確定不是你要的。'
+                : ''
+            }</p>`
+          : ''
+      }
+
+      <ul class="notes">
+        ${y.reasons.map((r) => `<li>${esc(r.replace(/\*\*/g, ''))}</li>`).join('')}
+      </ul>
+
+      <div class="override">
+        <span class="field__label">手動覆寫用神</span>
+        <span class="section__note">
+          用神無標準答案（同一組四柱在同一頁就有三種說法），可以改成你認同的那一套。
+          <strong>目前只影響本區的喜用／忌神顯示</strong>——依用神做的姓名匹配尚未實作（SPEC-v2 #17–#19）。
+        </span>
+        <div class="override__buttons">
+          ${ELEMENTS.map(
+            (e) => `<button type="button"
+              class="button button--inline ${y.favor.includes(e) ? 'button--on' : ''}"
+              data-action="toggle-favor" data-element="${esc(e)}">${esc(e)}</button>`,
+          ).join('')}
+          ${
+            y.overridden
+              ? '<button type="button" class="button button--inline" data-action="reset-favor">恢復本站判定</button>'
+              : ''
+          }
+        </div>
+      </div>
+    </section>`;
+}
+
 function noBaziNotice(reason: string): string {
   return `
     <section class="card">
@@ -391,9 +481,13 @@ interface Run {
   lateZiSwitchesDay: boolean;
   /** 夏令起訖當日的人工裁決；預設 false ＝ 照表套用。 */
   skipDst: boolean;
+  /** 手動覆寫的喜用五行；undefined ＝ 採本站判定（SPEC-v2 #15）。 */
+  favorOverride?: Element[];
 }
 
 let lastRun: Run | undefined;
+/** 上一次渲染時畫面上的喜用五行（本站判定或覆寫後的結果）。 */
+let currentFavor: Element[] = [];
 
 function runAndRender(run: Run): void {
   let baziHtml = '';
@@ -413,7 +507,17 @@ function runAndRender(run: Run): void {
       resultEl!.innerHTML = renderError(chart.reason);
       return;
     }
-    baziHtml = correctionSection(corrected, run.place) + chartSection(chart, run.lateZiSwitchesDay);
+    const ys = yongShen(chart, run.favorOverride ? { override: { favor: run.favorOverride } } : {});
+    if (!ys.ok) {
+      resultEl!.innerHTML = renderError(ys.reason);
+      return;
+    }
+    // 記住目前畫面上的喜用，讓「按一個五行」是在它上面加減，而不是從空集合開始。
+    currentFavor = ys.favor;
+    baziHtml =
+      correctionSection(corrected, run.place) +
+      chartSection(chart, run.lateZiSwitchesDay) +
+      yongShenSection(ys);
     // 生肖與年柱必須同一個判準：兩者都吃校正後的時間（SPEC-v2 #11）。
     correctedDate = {
       year: corrected.trueSolar.year,
@@ -516,6 +620,21 @@ resultEl.addEventListener('click', (event) => {
     runAndRender(lastRun);
   } else if (target.closest('[data-action="toggle-dst"]')) {
     lastRun = { ...lastRun, skipDst: !lastRun.skipDst };
+    runAndRender(lastRun);
+  } else if (target.closest('[data-action="reset-favor"]')) {
+    lastRun = { ...lastRun, favorOverride: undefined };
+    runAndRender(lastRun);
+  } else {
+    // 手動覆寫用神：從目前顯示的喜用開始加減，不是從空集合開始（SPEC-v2 #15）。
+    const chip = target.closest<HTMLElement>('[data-action="toggle-favor"]');
+    if (!chip) return;
+    const element = chip.dataset['element'] as Element | undefined;
+    if (!element) return;
+    const current = lastRun.favorOverride ?? currentFavor;
+    const next = current.includes(element)
+      ? current.filter((e) => e !== element)
+      : [...current, element];
+    lastRun = { ...lastRun, favorOverride: ELEMENTS.filter((e) => next.includes(e)) };
     runAndRender(lastRun);
   }
 });

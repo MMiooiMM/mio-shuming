@@ -105,6 +105,64 @@ describe('UI', () => {
     expect(text).toContain('含地支藏干');
   });
 
+  it('用神：印出身強弱、喜用忌神與六段依據（SPEC-v2 #14、#16）', () => {
+    // 戊寅 戊午 戊子 丁巳 —— docs 第 10 節的基準命例。
+    const text = submit({ ...BASE, year: '1998', month: '6', day: '10', hour: '10', minute: '0' });
+    expect(text).toContain('用神');
+    expect(text).toContain('身強');
+    expect(text).toContain('喜用');
+    expect(text).toContain('忌神');
+    for (const key of ['得令', '得地', '得勢', '扶抑', '調候', '從格']) {
+      expect(text, `缺少 ${key}`).toContain(key);
+    }
+    // 不給分數的是喜忌判定；身強弱的加權分數有明講「僅供顯示」。
+    expect(text).toContain('僅供顯示');
+  });
+
+  it('用神可手動覆寫並恢復（SPEC-v2 #15）', () => {
+    submit({ ...BASE, year: '1998', month: '6', day: '10', hour: '10', minute: '0' });
+    const favorOf = () =>
+      [...document.querySelectorAll('[data-action="toggle-favor"].button--on')].map(
+        (b) => (b as HTMLElement).dataset['element'],
+      );
+    expect(favorOf().sort()).toEqual(['木', '水', '金'].sort());
+
+    // 按「火」把它加進喜用 —— 從目前的喜用加減，不是從空集合開始。
+    document
+      .querySelector<HTMLButtonElement>('[data-action="toggle-favor"][data-element="火"]')!
+      .click();
+    expect(favorOf()).toContain('火');
+    expect((document.getElementById('result') as HTMLElement).textContent).toContain('手動指定');
+
+    document.querySelector<HTMLButtonElement>('[data-action="reset-favor"]')!.click();
+    expect(favorOf().sort()).toEqual(['木', '水', '金'].sort());
+    expect((document.getElementById('result') as HTMLElement).textContent).not.toContain('手動指定');
+  });
+
+  it('覆寫成空集合時明講後果，不靜默接受', () => {
+    submit({ ...BASE, year: '1998', month: '6', day: '10', hour: '10', minute: '0' });
+    for (const e of ['木', '金', '水']) {
+      document
+        .querySelector<HTMLButtonElement>(`[data-action="toggle-favor"][data-element="${e}"]`)!
+        .click();
+    }
+    const text = (document.getElementById('result') as HTMLElement).textContent ?? '';
+    expect(text).toContain('五行全忌');
+  });
+
+  it('用神區不宣稱姓名匹配會跟著重算——那是還沒實作的第 5 步', () => {
+    const text = submit({ ...BASE, year: '1998', month: '6', day: '10', hour: '10', minute: '0' });
+    expect(text).toContain('尚未實作');
+    expect(text).not.toContain('下方姓名匹配會跟著重算');
+  });
+
+  it('調候與扶抑衝突時畫面兩者並陳，不藏起來', () => {
+    // 庚午 戊子 己未 丁卯：身強土生於冬月，扶抑忌火、調候要火。
+    const text = submit({ ...BASE, year: '1990', month: '12', day: '20', hour: '6', minute: '0' });
+    expect(text).toContain('並陳');
+    expect(text).toContain('流派差異');
+  });
+
   it('缺出生時間時明講不產出八字，姓名分析照跑（SPEC-v2 #4）', () => {
     const text = submit({ ...BASE, hour: '', minute: '' });
     expect(text).toContain('未填出生時間');

@@ -587,3 +587,34 @@ select:focus-visible {
   font-size: 0.8125rem;
   letter-spacing: 0.04em;
 }
+
+/* 用神的手動覆寫（SPEC-v2 #15） */
+.override {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-top: 1px solid var(--line);
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+}
+
+.override__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+/* 未選中的五行按鈕做成外框樣式，才看得出哪些現在是喜用。 */
+.override__buttons .button {
+  margin-top: 0;
+  min-width: 3rem;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px solid var(--line);
+}
+
+.override__buttons .button--on {
+  color: #fff;
+  background: var(--good);
+  border-color: var(--good);
+}
