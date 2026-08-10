@@ -12,3 +12,7 @@ tools/raw/
 # Playwright MCP scratch output
 .playwright-mcp/
 *.png
+
+# Per-clone session state (handoff is short-lived, not shared)
+.claude/state/handoff-*.md
+.claude/state/*.log
