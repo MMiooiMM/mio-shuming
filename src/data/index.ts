@@ -10,6 +10,7 @@ import ganzhi from './ganzhi.json';
 import hiddenStems from './hidden-stems.json';
 import locations from './locations.json';
 import yongshen from './yongshen.json';
+import charWuxing from './char-wuxing.json';
 import dstTaiwan from './dst-taiwan.json';
 
 interface StrokeBlock {
@@ -315,6 +316,53 @@ export function tiaohouOf(dayMasterElement: Element, monthBranch: string): Tiaoh
 
 export const STRENGTH_RULE = yongshen.strength;
 export const YONGSHEN_CONFLICTS = yongshen.conflicts as string[];
+
+// --- 逐字五行 / 常用字 -------------------------------------------------------
+//
+// 這把尺與 v1 的「數理五行」（筆畫尾數）是**兩把不同的尺**，不混用：
+// 數理五行量的是筆畫數，逐字五行量的是字本身。SPEC-v2 #17。
+
+const packedWuxing = charWuxing.chars as Record<Element, string>;
+
+/** 字 → 五行的索引。資料檔為了體積把每個五行打包成一條字串，這裡展開成 Map。 */
+const charElementIndex = new Map<string, Element>();
+for (const [element, chars] of Object.entries(packedWuxing) as [Element, string][]) {
+  for (const ch of chars) charElementIndex.set(ch, element);
+}
+
+/**
+ * 單字的逐字五行；資料未收錄時回 `undefined`——呼叫端必須照實回報「五行不明」，
+ * 不猜（SPEC-v2 #24）。
+ */
+export function charElementOf(ch: string): Element | undefined {
+  return charElementIndex.get(ch);
+}
+
+/** Big5 Level 1 常用字，候選字推薦只從這裡挑，避免列出冷僻字（SPEC-v2 #19）。 */
+export const COMMON_CHARS: string[] = [...(charWuxing.common as string)];
+const commonSet = new Set(COMMON_CHARS);
+export const isCommonChar = (ch: string): boolean => commonSet.has(ch);
+
+export const CHAR_WUXING_SOURCE = charWuxing.source;
+export const CHAR_WUXING_CONFLICTS = charWuxing.crossSourceConflicts as {
+  char: string;
+  'ben-hua': string;
+  zhenyangze: string;
+}[];
+
+/**
+ * 上游把同一個字指到兩種五行的字。這些字**不在索引裡**（`charElementOf` 回
+ * undefined），查詢端要照實說「來源有兩說」，不能挑一個當答案。
+ */
+export const CHAR_WUXING_UNDECIDED = new Map<string, string[]>([
+  ...(charWuxing.mergeCollisions as { char: string; readings: string[] }[]).map(
+    (c) => [c.char, c.readings] as [string, string[]],
+  ),
+  ...(charWuxing.bridgeConflicts as { char: string; readings: string[] }[]).map(
+    (c) => [c.char, c.readings] as [string, string[]],
+  ),
+]);
+export const CHAR_WUXING_STATS = charWuxing.stats;
 
 // --- 字根 -------------------------------------------------------------------
 

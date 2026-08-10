@@ -150,10 +150,96 @@ describe('UI', () => {
     expect(text).toContain('五行全忌');
   });
 
-  it('用神區不宣稱姓名匹配會跟著重算——那是還沒實作的第 5 步', () => {
+  it('姓名匹配：逐字評述＋候選字，並說明兩把尺的差別（SPEC-v2 #17–#19）', () => {
     const text = submit({ ...BASE, year: '1998', month: '6', day: '10', hour: '10', minute: '0' });
-    expect(text).toContain('尚未實作');
-    expect(text).not.toContain('下方姓名匹配會跟著重算');
+    expect(text).toContain('姓名匹配');
+    expect(text).toContain('逐字五行');
+    expect(text).toContain('數理五行'); // 兩把尺的說明
+    expect(text).toContain('來源沒有交代'); // 資料限制照 v1 慣例標明
+    expect(text).toContain('依用神推薦的候選字');
+  });
+
+  it('覆寫用神會讓姓名匹配跟著重算（SPEC-v2 #15 的閉環）', () => {
+    submit({ ...BASE, year: '1998', month: '6', day: '10', hour: '10', minute: '0' });
+    const verdictOf = (ch: string) => {
+      const items = [...document.querySelectorAll('.card')].filter((c) =>
+        c.querySelector('.section__title')?.textContent?.includes('姓名匹配'),
+      );
+      const li = [...items[0]!.querySelectorAll('.char-item')].find(
+        (el) => el.querySelector('.char-item__char')?.textContent === ch,
+      );
+      return li?.querySelector('.tag')?.textContent?.trim() ?? '';
+    };
+    // 王＝土，本站判定忌土 → 傷用神。
+    expect(verdictOf('王')).toContain('傷用神');
+
+    // 改判「土」為喜用後，同一個字的評述必須跟著翻轉。
+    document
+      .querySelector<HTMLButtonElement>('[data-action="toggle-favor"][data-element="土"]')!
+      .click();
+    expect(verdictOf('王')).toContain('補用神');
+
+    document.querySelector<HTMLButtonElement>('[data-action="reset-favor"]')!.click();
+    expect(verdictOf('王')).toContain('傷用神');
+  });
+
+  it('候選字的筆畫範圍由使用者設定，改了就重算', () => {
+    submit({ ...BASE, year: '1998', month: '6', day: '10', hour: '10', minute: '0' });
+    const firstChar = () =>
+      document.querySelector('.candidates__chars span')!.textContent ?? '';
+    const before = firstChar();
+
+    const min = document.querySelector<HTMLInputElement>(
+      '[data-action="candidate-strokes"][data-bound="min"]',
+    )!;
+    min.value = '12';
+    min.dispatchEvent(new Event('change', { bubbles: true }));
+
+    const after = firstChar();
+    expect(after).not.toBe(before);
+    // 12 畫以下的字不該再出現。
+    for (const span of document.querySelectorAll('.candidates__chars span')) {
+      const strokes = Number(/(\d+)/.exec(span.getAttribute('title') ?? '')?.[1]);
+      expect(strokes).toBeGreaterThanOrEqual(12);
+    }
+  });
+
+  it('筆畫範圍上下顛倒時畫面明講無效，不顯示成「沒有候選字」', () => {
+    submit({ ...BASE, year: '1998', month: '6', day: '10', hour: '10', minute: '0' });
+    const setBound = (bound: string, value: string) => {
+      const el = document.querySelector<HTMLInputElement>(
+        `[data-action="candidate-strokes"][data-bound="${bound}"]`,
+      )!;
+      el.value = value;
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    setBound('max', '5');
+    setBound('min', '20');
+    const text = (document.getElementById('result') as HTMLElement).textContent ?? '';
+    expect(text).toContain('筆畫範圍無效');
+    expect(document.querySelectorAll('.candidates__chars span')).toHaveLength(0);
+    // 同一個錯誤只講一次。
+    expect(text.split('筆畫範圍無效')).toHaveLength(2);
+  });
+
+  it('資料來源區塊列出逐字五行與常用字表的出處與限制（SPEC-v2 #21）', () => {
+    const text = submit({ ...BASE, year: '1998', month: '6', day: '10', hour: '10', minute: '0' });
+    expect(text).toContain('逐字五行（姓名匹配的尺）');
+    expect(text).toContain('Apache-2.0');
+    expect(text).toContain('常用字表（候選字過濾）');
+    expect(text).toContain('Big5 Level 1');
+    expect(text).toContain('不等同'); // 與教育部常用國字標準字體表的差異
+  });
+
+  it('筆畫範圍填非數字時當成不設限，不猜', () => {
+    submit({ ...BASE, year: '1998', month: '6', day: '10', hour: '10', minute: '0' });
+    const before = document.querySelectorAll('.candidates__chars span').length;
+    const min = document.querySelector<HTMLInputElement>(
+      '[data-action="candidate-strokes"][data-bound="min"]',
+    )!;
+    min.value = 'abc';
+    min.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(document.querySelectorAll('.candidates__chars span').length).toBe(before);
   });
 
   it('調候與扶抑衝突時畫面兩者並陳，不藏起來', () => {

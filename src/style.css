@@ -618,3 +618,27 @@ select:focus-visible {
   background: var(--good);
   border-color: var(--good);
 }
+
+/* 依用神推薦的候選字 */
+.candidates {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.6rem 0.7rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.candidates__label {
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.candidates__chars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  font-size: 1.25rem;
+  line-height: 1.6;
+}

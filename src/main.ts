@@ -8,6 +8,8 @@ import {
   KANGXI_SOURCE,
   LICHUN_SOURCE,
   LOCATION_SOURCE,
+  CHAR_WUXING_SOURCE,
+  CHAR_WUXING_STATS,
   NUMEROLOGY_SOURCE,
   STANDARD_MERIDIAN,
   TIAOHOU_SOURCE,
@@ -16,6 +18,8 @@ import {
   countyOf,
 } from './data/index.ts';
 import { analyse } from './engine/index.ts';
+import { matchName } from './engine/match.ts';
+import type { MatchResult, MatchVerdict } from './engine/match.ts';
 import type { Analysis, CharVerdict, Element, Grid, Luck } from './engine/index.ts';
 import { baziChart } from './bazi/chart.ts';
 import type { BaziChart } from './bazi/chart.ts';
@@ -109,6 +113,19 @@ function sourcesSection(): string {
       '台灣夏令時間年份',
       `${DST_SOURCE.note} 本站不列入 ${DST_EXCLUDED.year} 年（${DST_EXCLUDED.range}）：${DST_EXCLUDED.reason}`,
       DST_SOURCE.url,
+    ],
+    [
+      '逐字五行（姓名匹配的尺）',
+      `${CHAR_WUXING_SOURCE.wuxing.dataset}，授權 ${CHAR_WUXING_SOURCE.wuxing.license}。` +
+        `${CHAR_WUXING_SOURCE.wuxing.caveat} 對常用字的覆蓋率 ${CHAR_WUXING_STATS.commonCoverage}，` +
+        '其餘回報「五行不明」不猜；上游有兩說的字一律不選邊。',
+      CHAR_WUXING_SOURCE.wuxing.url,
+    ],
+    [
+      '常用字表（候選字過濾）',
+      `${CHAR_WUXING_SOURCE.common.dataset}，共 ${CHAR_WUXING_STATS.commonChars} 字。` +
+        CHAR_WUXING_SOURCE.common.caveat,
+      CHAR_WUXING_SOURCE.common.url,
     ],
     [
       '字根拆解（IDS）',
@@ -310,8 +327,8 @@ function yongShenSection(y: YongShenResult): string {
       <div class="override">
         <span class="field__label">手動覆寫用神</span>
         <span class="section__note">
-          用神無標準答案（同一組四柱在同一頁就有三種說法），可以改成你認同的那一套。
-          <strong>目前只影響本區的喜用／忌神顯示</strong>——依用神做的姓名匹配尚未實作（SPEC-v2 #17–#19）。
+          用神無標準答案（同一組四柱在同一頁就有三種說法），可以改成你認同的那一套，
+          下方的姓名匹配與候選字會跟著重算。
         </span>
         <div class="override__buttons">
           ${ELEMENTS.map(
@@ -326,6 +343,75 @@ function yongShenSection(y: YongShenResult): string {
           }
         </div>
       </div>
+    </section>`;
+}
+
+function matchSection(m: MatchResult, strokes: { min?: number; max?: number }): string {
+  const verdictTag = (v: MatchVerdict) =>
+    v === '補用神' ? 'tag--good' : v === '傷用神' ? 'tag--bad' : v === '中性' ? 'tag--flat' : 'tag--mid';
+
+  return `
+    <section class="card">
+      <h2 class="section__title">
+        <span>姓名匹配</span>
+        <span class="section__note">逐字五行 × 用神</span>
+      </h2>
+      <p class="section__note">
+        這裡量的是<strong>字本身的五行</strong>，與上面五格區的<strong>數理五行</strong>
+        （依筆畫尾數）是兩把不同的尺，本站不混用。逐字五行資料的判定依據
+        <strong>來源沒有交代</strong>（實測不依部首：明＝水、口＝木），
+        與 81 數理同級，屬通行版說法而非權威規則。
+      </p>
+      <ul class="chars">
+        ${m.chars
+          .map(
+            (c) => `<li class="char-item">
+              <span class="char-item__char">${esc(c.char)}</span>
+              <span class="tag ${verdictTag(c.verdict)}">${esc(c.verdict)}${
+                c.element ? `・${esc(c.element)}` : ''
+              }</span>
+              <span class="char-item__why">${esc(c.explanation)}</span>
+            </li>`,
+          )
+          .join('')}
+      </ul>
+      <p>${esc(m.summary)}</p>
+
+      ${
+        m.candidates.length
+          ? `<h3 class="section__title"><span>依用神推薦的候選字</span>
+              <span class="section__note">已用查證過的常用字表過濾冷僻字</span></h3>
+            <div class="override">
+              <span class="field__label">康熙筆畫範圍</span>
+              <span class="section__note">
+                候選字依筆畫由少到多列出，所以不設限時前面都是一兩畫的字。
+                「幾畫到幾畫適合取名」沒有出處，本站不預設一個自編的區間——範圍由你決定。
+              </span>
+              <div class="override__buttons">
+                <input type="number" inputmode="numeric" min="1" max="30" placeholder="最少"
+                  data-action="candidate-strokes" data-bound="min" value="${strokes.min ?? ''}" />
+                <input type="number" inputmode="numeric" min="1" max="30" placeholder="最多"
+                  data-action="candidate-strokes" data-bound="max" value="${strokes.max ?? ''}" />
+              </div>
+            </div>
+            ${m.candidates
+              .map(
+                (g) => `<div class="candidates">
+                  <span class="candidates__label">${esc(g.element)}</span>
+                  <span class="candidates__chars">${g.chars
+                    .map((c) => `<span title="${c.strokes} 畫">${esc(c.char)}</span>`)
+                    .join('')}</span>
+                  <span class="section__note">常用字表中屬${esc(g.element)}、且符合目前筆畫範圍
+                    並排除名字已用字者，共 ${g.total} 字；此處依筆畫由少到多列出前 ${g.chars.length} 個。</span>
+                </div>`,
+              )
+              .join('')}`
+          : `<p class="notice">${
+              m.candidateError
+                ? esc(m.candidateError)
+                : '喜用為空，沒有可推薦的候選字。'
+            }</p>`
+      }
     </section>`;
 }
 
@@ -483,6 +569,8 @@ interface Run {
   skipDst: boolean;
   /** 手動覆寫的喜用五行；undefined ＝ 採本站判定（SPEC-v2 #15）。 */
   favorOverride?: Element[];
+  /** 候選字的筆畫範圍，由使用者自行設定；空白＝不設限。 */
+  candidateStrokes: { min?: number; max?: number };
 }
 
 let lastRun: Run | undefined;
@@ -514,10 +602,14 @@ function runAndRender(run: Run): void {
     }
     // 記住目前畫面上的喜用，讓「按一個五行」是在它上面加減，而不是從空集合開始。
     currentFavor = ys.favor;
+    // 姓名匹配吃的是用神的結果，所以手動覆寫會讓它跟著重算（SPEC-v2 #15）。
+    const nameChars = [...run.surname.trim(), ...run.givenName.trim()];
+    const match = matchName(nameChars, ys.favor, ys.avoid, { strokes: run.candidateStrokes });
     baziHtml =
       correctionSection(corrected, run.place) +
       chartSection(chart, run.lateZiSwitchesDay) +
-      yongShenSection(ys);
+      yongShenSection(ys) +
+      matchSection(match, run.candidateStrokes);
     // 生肖與年柱必須同一個判準：兩者都吃校正後的時間（SPEC-v2 #11）。
     correctedDate = {
       year: corrected.trueSolar.year,
@@ -605,9 +697,25 @@ form.addEventListener('submit', (event) => {
     lateZiSwitchesDay: true,
     // 夏令起訖當日預設照表套用，使用者可切換到另一種假設。
     skipDst: false,
+    candidateStrokes: {},
   };
   runAndRender(lastRun);
   resultEl!.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+// 候選字的筆畫範圍。空白＝不設限；非數字一律當成不設限，不猜使用者的意思。
+resultEl.addEventListener('change', (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement) || !lastRun) return;
+  if (target.dataset['action'] !== 'candidate-strokes') return;
+  const bound = target.dataset['bound'] === 'min' ? 'min' : 'max';
+  const raw = target.value.trim();
+  const value = raw === '' ? undefined : Number(raw);
+  const next = { ...lastRun.candidateStrokes };
+  if (value === undefined || !Number.isInteger(value) || value < 1) delete next[bound];
+  else next[bound] = value;
+  lastRun = { ...lastRun, candidateStrokes: next };
+  runAndRender(lastRun);
 });
 
 // 兩個「一鍵切換重算」：早晚子時（SPEC-v2 #12）與夏令起訖當日的兩種假設。
