@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.local
+.DS_Store
+
+# Upstream data downloads used only by tools/gen-*.mjs. Regenerate with:
+#   curl -o tools/raw/Unihan.zip      https://www.unicode.org/Public/UCD/latest/ucd/Unihan.zip
+#   curl -o tools/raw/CJKRadicals.txt https://www.unicode.org/Public/UCD/latest/ucd/CJKRadicals.txt
+#   curl -o tools/raw/ids.txt         https://raw.githubusercontent.com/cjkvi/cjkvi-ids/master/ids.txt
+tools/raw/
+
+# Playwright MCP scratch output
+.playwright-mcp/
+*.png

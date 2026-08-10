@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="以康熙筆畫計算三才五格、依立春換算生肖判定喜忌字根、並分析姓名五行。各分項獨立評述，不合成單一總分。"
+    />
+    <title>姓名學分析 — 三才五格・生肖字根・五行</title>
+  </head>
+  <body>
+    <main class="page">
+      <header class="page__header">
+        <h1>姓名學分析</h1>
+        <p class="page__lede">
+          康熙筆畫三才五格 ・ 立春換算生肖字根 ・ 五行分佈
+        </p>
+      </header>
+
+      <form id="form" class="card form" novalidate>
+        <!--
+          These fields deliberately carry no maxlength: the attribute counts
+          UTF-16 code units, so maxlength="2" silently truncates a name whose
+          second character is outside the BMP (罕字 such as 𡈙 cost 2 units).
+          That swallowed the character and produced a result for the truncated
+          name instead of the 查無此字 warning SPEC #7 requires. Length is
+          validated in the engine, by code point.
+        -->
+        <div class="form__row">
+          <label class="field">
+            <span class="field__label">姓</span>
+            <input
+              id="surname"
+              name="surname"
+              type="text"
+              inputmode="text"
+              autocomplete="off"
+              placeholder="王"
+              required
+            />
+            <span class="field__hint">單姓 1 字，複姓 2 字</span>
+          </label>
+          <label class="field">
+            <span class="field__label">名</span>
+            <input
+              id="givenName"
+              name="givenName"
+              type="text"
+              inputmode="text"
+              autocomplete="off"
+              placeholder="小明"
+              required
+            />
+            <span class="field__hint">1 至 2 字</span>
+          </label>
+        </div>
+
+        <fieldset class="field field--date">
+          <legend class="field__label">西元出生年月日</legend>
+          <div class="form__row form__row--date">
+            <label class="sr-only" for="year">年</label>
+            <input id="year" name="year" type="number" inputmode="numeric" placeholder="1985" min="1900" max="2100" required />
+            <label class="sr-only" for="month">月</label>
+            <input id="month" name="month" type="number" inputmode="numeric" placeholder="1" min="1" max="12" required />
+            <label class="sr-only" for="day">日</label>
+            <input id="day" name="day" type="number" inputmode="numeric" placeholder="20" min="1" max="31" required />
+          </div>
+          <span class="field__hint">生肖依<strong>立春</strong>分界換算，非農曆春節</span>
+        </fieldset>
+
+        <button type="submit" class="button">開始分析</button>
+      </form>
+
+      <div id="result" class="result" aria-live="polite"></div>
+
+      <footer class="page__footer">
+        <p>
+          本站僅供興趣與學習參考。姓名學各流派規則不一，結果不構成任何建議。
+        </p>
+        <p>
+          資料來源與計算規則出處見
+          <a href="#sources">資料來源</a>；程式與資料檔皆開源。
+        </p>
+      </footer>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
