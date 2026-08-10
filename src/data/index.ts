@@ -6,6 +6,8 @@ import solarTerms from './solar-terms.json';
 import componentIndex from './components.json';
 import zodiacTable from './zodiac-radicals.json';
 import numerology from './numerology-81.json';
+import ganzhi from './ganzhi.json';
+import hiddenStems from './hidden-stems.json';
 
 interface StrokeBlock {
   start: number;
@@ -138,6 +140,82 @@ export function equationOfTimeMinutes(month: number, day: number): number | unde
 
 export const SOLAR_TERM_SOURCE = solarTerms.source;
 
+// --- 天干地支 ---------------------------------------------------------------
+
+export interface Stem {
+  name: string;
+  element: Element;
+  /** true 為陰干，false 為陽干。 */
+  yin: boolean;
+}
+
+export interface Branch {
+  name: string;
+  element: Element;
+  yin: boolean;
+}
+
+export const STEMS = ganzhi.stems as Stem[];
+export const BRANCHES = ganzhi.branches as Branch[];
+
+/** 五虎遁：年干 → 寅月天干。《神峰通考·起八字訣》。 */
+export const WU_HU_DUN = ganzhi.dunRules['五虎遁'] as Record<string, string | undefined>;
+/** 五鼠遁：日干 → 子時天干。《神峰通考·起八字訣》。 */
+export const WU_SHU_DUN = ganzhi.dunRules['五鼠遁'] as Record<string, string | undefined>;
+
+export const GANZHI_SOURCE = ganzhi.source;
+
+// --- 地支藏干 / 十神 ---------------------------------------------------------
+
+export type HiddenStemRole = '本氣' | '中氣' | '餘氣';
+
+export interface HiddenStem {
+  stem: string;
+  role: HiddenStemRole;
+}
+
+const hiddenTable = hiddenStems.hiddenStems as Record<
+  string,
+  Partial<Record<HiddenStemRole, string>>
+>;
+
+const HIDDEN_ORDER: HiddenStemRole[] = ['本氣', '中氣', '餘氣'];
+
+/** 某地支所藏天干，依本氣 → 中氣 → 餘氣排序（無者略）。 */
+export function hiddenStemsOf(branch: string): HiddenStem[] {
+  const entry = hiddenTable[branch];
+  if (!entry) return [];
+  return HIDDEN_ORDER.flatMap((role) => {
+    const stem = entry[role];
+    return stem ? [{ stem, role }] : [];
+  });
+}
+
+export type ShiShen =
+  | '比肩' | '劫財' | '食神' | '傷官' | '偏財'
+  | '正財' | '七殺' | '正官' | '偏印' | '正印';
+
+export type ElementRelation = '同我' | '我生' | '我剋' | '剋我' | '生我';
+
+export const SHISHEN_TABLE = hiddenStems.shishen as Record<
+  ElementRelation,
+  { same: ShiShen; different: ShiShen }
+>;
+
+/**
+ * 《淵海子平》原文逐支列出的藏干，供測試比對。
+ *
+ * 資料檔用 `$` 前綴的鍵放註解（全專案慣例），這裡濾掉——否則
+ * `Object.keys()` 會把 `$comment` 當成一個地支。
+ */
+export const CLASSICAL_HIDDEN_STEMS: Record<string, string[]> = Object.fromEntries(
+  Object.entries(hiddenStems.classicalStemSets).filter(
+    (entry): entry is [string, string[]] => !entry[0].startsWith('$'),
+  ),
+);
+export const HIDDEN_STEMS_SOURCE = hiddenStems.source;
+export const HIDDEN_STEMS_CONFLICTS = hiddenStems.conflicts as string[];
+
 // --- 字根 -------------------------------------------------------------------
 
 interface ComponentBlock {
@@ -182,7 +260,8 @@ export interface ZodiacRule {
 }
 
 export const ZODIAC_RULES = zodiacTable.zodiac as Record<Animal, ZodiacRule>;
-export const BRANCHES = zodiacTable.branches as { branch: string; animal: Animal }[];
+/** 地支 → 生肖 對照。與 v2 的 `BRANCHES`（干支的五行陰陽）是不同的東西。 */
+export const ZODIAC_BRANCHES = zodiacTable.branches as { branch: string; animal: Animal }[];
 // --- 81 數理 / 五行 ----------------------------------------------------------
 
 export type Element = '木' | '火' | '土' | '金' | '水';

@@ -1,0 +1,55 @@
+{
+  "$comment": "天干地支的五行與陰陽。依 mio-istj 蒐證，原文出處見 source。人工整理，非程式產生。",
+  "source": {
+    "stems": {
+      "url": "https://zh.wikipedia.org/wiki/%E5%A4%A9%E5%B9%B2",
+      "note": "〈天干與阴阳五行、五方〉節原文（已 curl 逐字比對）：「甲、乙为木、东方／丙、丁为火、南方／戊、己为土、中央／庚、辛为金、西方／壬、癸为水、北方」「天干也有陰陽之分：甲、丙、戊、庚、壬，屬陽。乙、丁、己、辛、癸，屬陰。」"
+    },
+    "branches": {
+      "url": "https://zh.wikipedia.org/wiki/%E5%9C%B0%E6%94%AF",
+      "note": "〈地支｜季節｜八方｜二十四方｜天干｜陰陽五行〉表原文（已 curl 逐字比對）：子 陽水、丑 陰土、寅 陽木、卯 陰木、辰 陽土、巳 陰火、午 陽火、未 陰土、申 陽金、酉 陰金、戌 陽土、亥 陰水。"
+    }
+  },
+  "caveat": "上述維基〈地支〉表另有一個「天干」欄（子→壬、丑→己、寅→甲、巳→丁、午→丙、亥→癸），那是**地支與天干的陰陽配對**，不是八字的地支藏干本氣。八字藏干中子藏癸、亥藏壬、午本氣為丁、巳本氣為丙 —— 兩者在子午卯酉四支上剛好相反（體用陰陽不同）。藏干另見 hidden-stems 資料，切勿以此欄代用。",
+  "stems": [
+    { "name": "甲", "element": "木", "yin": false },
+    { "name": "乙", "element": "木", "yin": true },
+    { "name": "丙", "element": "火", "yin": false },
+    { "name": "丁", "element": "火", "yin": true },
+    { "name": "戊", "element": "土", "yin": false },
+    { "name": "己", "element": "土", "yin": true },
+    { "name": "庚", "element": "金", "yin": false },
+    { "name": "辛", "element": "金", "yin": true },
+    { "name": "壬", "element": "水", "yin": false },
+    { "name": "癸", "element": "水", "yin": true }
+  ],
+  "branches": [
+    { "name": "子", "element": "水", "yin": false },
+    { "name": "丑", "element": "土", "yin": true },
+    { "name": "寅", "element": "木", "yin": false },
+    { "name": "卯", "element": "木", "yin": true },
+    { "name": "辰", "element": "土", "yin": false },
+    { "name": "巳", "element": "火", "yin": true },
+    { "name": "午", "element": "火", "yin": false },
+    { "name": "未", "element": "土", "yin": true },
+    { "name": "申", "element": "金", "yin": false },
+    { "name": "酉", "element": "金", "yin": true },
+    { "name": "戌", "element": "土", "yin": false },
+    { "name": "亥", "element": "水", "yin": true }
+  ],
+  "dunRules": {
+    "$quote": "《神峰通考·起八字訣》：「年上遁月　甲己之年丙作首，乙庚之歲戊為頭。丙辛之歲尋庚上，丁壬壬寅順行流。更有戊癸何處起？甲寅之上好追求。」「日上遁時　甲己還加甲，乙庚丙作初。丙辛從戊起，丁壬庚子居，戊癸何方發？壬子是真途。」",
+    "url": "https://zh.wikisource.org/wiki/%E7%A5%9E%E5%B3%B0%E9%80%9A%E8%80%83",
+    "五虎遁": { "甲": "丙", "己": "丙", "乙": "戊", "庚": "戊", "丙": "庚", "辛": "庚", "丁": "壬", "壬": "壬", "戊": "甲", "癸": "甲" },
+    "五鼠遁": { "甲": "甲", "己": "甲", "乙": "丙", "庚": "丙", "丙": "戊", "辛": "戊", "丁": "庚", "壬": "庚", "戊": "壬", "癸": "壬" }
+  },
+  "dayPillar": {
+    "$quote": "交通部中央氣象署《天文年曆》：「求日名干支法　置儒略日序減10，以60除之餘數即為干支順序。例如儒略日序2460959減去10，以60除之，餘49，查干支順序表得壬子。」",
+    "url": "https://www.cwa.gov.tw/Data/service/notice/download/Publish_20241209150048.pdf",
+    "formula": "(JDN - 10) mod 60，餘 0 視為 60，再查六十甲子"
+  },
+  "yearPillar": {
+    "note": "干支紀年錨點：西元 4 年為甲子年，故 (年 - 4) mod 60 + 1 即干支序。以立春為年界（見 solar-terms.json 與 docs/v2-sources.md 第 2 節）。",
+    "verified": "2020 子鼠、2024 辰龍、1985 丑牛"
+  }
+}

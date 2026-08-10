@@ -1,6 +1,6 @@
 // 生肖 — 依立春分界換算生肖，並逐字判定喜用／忌用字根。
 //
-// 分界來源（src/data/zodiac-radicals.json 與 src/data/lichun.json）：
+// 分界來源（src/data/zodiac-radicals.json 與 src/data/solar-terms.json）：
 //   https://www.cma.gov.cn/kppd/kppdsytj/201602/t20160205_303710.html
 //     「干支曆嚴格地以立春作為一年的開始，且不是按照一天，而是按照由太陽位置
 //       決定的立春具體時刻來劃分。」「因此，如果從干支曆的角度出發，生肖的
@@ -10,7 +10,7 @@
 //
 // 字根喜忌來源：https://k.sina.cn/article_2234040443_8528c07b00100q0xg.html
 
-import { BRANCHES, LICHUN_RANGE, ZODIAC_RULES, lichunOf, radicalsOf } from '../data/index.ts';
+import { ZODIAC_BRANCHES, LICHUN_RANGE, ZODIAC_RULES, lichunOf, radicalsOf } from '../data/index.ts';
 import type { Animal, CharVerdict, ZodiacResult } from './types.ts';
 
 /**
@@ -34,21 +34,38 @@ export interface ZodiacYear {
 /**
  * 依立春換算生肖。立春之前算前一年的生肖。
  *
- * 只收到年月日、沒有時辰時，出生在立春「當天」無法判定屬於哪一年 ——
- * 這裡誠實回報 `boundaryAmbiguous`，不猜。
+ * `time` 可省略（v1 只收年月日）。省略時，出生在立春「當天」無法判定屬於哪一年
+ * —— 誠實回報 `boundaryAmbiguous`，不猜。
+ *
+ * **有時刻就一定要傳進來**：v2 的四柱以立春的精確時刻分界，若這裡仍只看日期，
+ * 同一個人會出現「生肖說牛、年柱說鼠」的矛盾（SPEC-v2 #11 要求兩者一致）。
+ * 傳入 `time` 後兩者依同一份 solar-terms 資料、用同一個判準，結果必然一致。
  */
-export function zodiacOf(year: number, month: number, day: number): ZodiacYear | undefined {
+export function zodiacOf(
+  year: number,
+  month: number,
+  day: number,
+  time?: { hour: number; minute: number },
+): ZodiacYear | undefined {
   const [first, last] = LICHUN_RANGE;
   if (year < first || year > last) return undefined;
   const lichun = lichunOf(year);
   if (!lichun) return undefined;
 
-  const beforeLichun =
-    month < lichun.month || (month === lichun.month && day < lichun.day);
-  const onLichun = month === lichun.month && day === lichun.day;
+  const onLichunDay = month === lichun.month && day === lichun.day;
+  const beforeLichun = time
+    ? month < lichun.month ||
+      (month === lichun.month &&
+        (day < lichun.day ||
+          (day === lichun.day &&
+            (time.hour < lichun.hour ||
+              (time.hour === lichun.hour && time.minute < lichun.minute)))))
+    : month < lichun.month || (month === lichun.month && day < lichun.day);
+  // 有時刻就已定案；只有在缺時刻且生於立春當天時才是真的無法判定。
+  const onLichun = onLichunDay && !time;
 
   const solarYear = beforeLichun ? year - 1 : year;
-  const pick = (y: number) => BRANCHES[branchIndexOfSolarYear(y)]!;
+  const pick = (y: number) => ZODIAC_BRANCHES[branchIndexOfSolarYear(y)]!;
   const chosen = pick(solarYear);
   const lichunText = `${year} 年立春：${lichun.month} 月 ${lichun.day} 日 ${String(lichun.hour).padStart(2, '0')}:${String(lichun.minute).padStart(2, '0')}（台北時間）`;
 
@@ -102,8 +119,9 @@ export function analyseZodiac(
   month: number,
   day: number,
   chars: string[],
+  time?: { hour: number; minute: number },
 ): ZodiacResult | undefined {
-  const zy = zodiacOf(year, month, day);
+  const zy = zodiacOf(year, month, day, time);
   if (!zy) return undefined;
   const rule = ZODIAC_RULES[zy.animal];
   const verdicts = judgeChars(zy.animal, chars);
