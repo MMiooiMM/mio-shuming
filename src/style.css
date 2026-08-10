@@ -442,6 +442,15 @@ input[type='number']::-webkit-inner-spin-button {
 
 /* --- v2：時間校正與八字命盤 ------------------------------------------------ */
 
+/*
+  瀏覽器內建的 `[hidden] { display: none }` 特異性比 class 選擇器低，
+  `.field { display: flex }` 會把它蓋掉 —— 選了台灣縣市時，本該藏起來的
+  手填經度欄位仍然照常顯示。實機截圖才看得出來，jsdom 只驗得到 .hidden 屬性。
+*/
+[hidden] {
+  display: none !important;
+}
+
 /* 下拉沿用 input 的外觀，免得表單裡兩種欄位長得不一樣。 */
 select {
   width: 100%;
@@ -471,6 +480,11 @@ select:focus-visible {
 .field--check input {
   width: auto;
   flex: 0 0 auto;
+}
+
+/* 說明文字與勾選框同一行；不給 flex 的話長字串會整段被擠到下一行。 */
+.field--check > span:not(.field__hint) {
+  flex: 1 1 8rem;
 }
 
 .field--check .field__hint {
