@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>數名其妙 v2 — 凍結 Acceptance</title>
+<style>
+:root{
+  --bg:#f7f5f1; --surface:#fff; --ink:#1f1c19; --soft:#5c554d; --line:#e2ddd4;
+  --accent:#8c2f1f; --accent-soft:#f3e6e2;
+  --warn:#8a6d1f; --warn-soft:#f6efdc;
+  --good:#2f6b3f; --good-soft:#e6f0e8;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#171513; --surface:#211e1b; --ink:#f0ebe4; --soft:#b3aaa0; --line:#362f2a;
+    --accent:#e2856f; --accent-soft:#3a2521;
+    --warn:#e0c274; --warn-soft:#322a1a;
+    --good:#8fce9f; --good-soft:#22301f;
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink); font-size:16px; line-height:1.75;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+.wrap{max-width:44rem;margin:0 auto;padding:1.5rem 1rem 4rem}
+header{text-align:center;margin-bottom:1.75rem}
+h1{font-size:1.35rem;margin:0;letter-spacing:.18em;text-indent:.18em}
+.sub{margin:.4rem 0 0;font-size:.8125rem;color:var(--soft)}
+.frozen{
+  display:inline-block;margin-top:.6rem;padding:.15rem .7rem;border-radius:999px;
+  background:var(--good-soft);color:var(--good);font-size:.75rem;font-weight:600;
+}
+section{
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:1rem 1.1rem;margin-bottom:1rem;
+}
+h2{
+  font-size:1rem;margin:0 0 .6rem;letter-spacing:.06em;
+  padding-bottom:.5rem;border-bottom:1px solid var(--line);
+}
+ol{margin:0;padding-left:1.4rem}
+ol li{margin:.5rem 0}
+ol li::marker{color:var(--accent);font-weight:600}
+ul{margin:.4rem 0;padding-left:1.2rem}
+ul li{margin:.25rem 0}
+strong{color:var(--accent)}
+.note{font-size:.8125rem;color:var(--soft);margin:.35rem 0 0}
+.callout{
+  border-left:3px solid var(--warn);background:var(--warn-soft);
+  padding:.7rem .85rem;border-radius:6px;font-size:.875rem;margin:.5rem 0 0;
+}
+.callout strong{color:var(--warn)}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:.5rem -.35rem 0}
+table{border-collapse:collapse;width:100%;min-width:33rem;font-size:.8125rem}
+th,td{text-align:left;padding:.45rem .55rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--soft);font-weight:600;white-space:nowrap}
+td:first-child{white-space:nowrap;font-weight:600}
+.no{color:var(--soft)}
+footer{margin-top:1.5rem;text-align:center;font-size:.75rem;color:var(--soft)}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;
+  background:var(--accent-soft);color:var(--accent);padding:.05em .35em;border-radius:4px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>數名其妙 v2</h1>
+  <p class="sub">八字排盤 ・ 用神判定 ・ 姓名匹配</p>
+  <span class="frozen">2026-08-10 已凍結</span>
+  <p class="note">由 /mio-hot-sauce grill 收斂。本檔為 v2 開發、驗證與獨立 review 的凍結判準。</p>
+</header>
+
+<section>
+  <h2>範圍</h2>
+  <ol>
+    <li><strong>完整鏈</strong>：八字排盤 → 用神判定 → 姓名匹配（含候選字推薦）。三段都要有，缺一不算完成。</li>
+    <li><strong>不做</strong>大運、流年、納音、神煞。用神只依本命四柱，不隨時間變動。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>輸入</h2>
+  <ol start="3">
+    <li>在 v1 的姓／名／西元年月日之外，新增<strong>出生時間（時＋分，必填）</strong>與<strong>出生地</strong>（台灣 22 縣市下拉，另備手填經度＋時區給海外出生者）。</li>
+    <li>缺出生時間時<strong>不產出八字</strong>，僅提供 v1 的姓名分析，並明確說明原因。</li>
+    <li>年份範圍沿用 v1 的 1900–2100。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>時間校正</h2>
+  <p class="note">依序套用，且每一層都要能在畫面上看到。</p>
+  <ol start="6">
+    <li><strong>夏令時間</strong>：命中查證過的台灣實施年份時自動減 1 小時，並在畫面明示「已自動校正」。手填經度的海外出生者退回手動勾選。</li>
+    <li><strong>經度差</strong>：依出生地經度與時區標準經線之差校正（每度 4 分鐘）。</li>
+    <li><strong>均時差</strong>：依出生日期計算真太陽時與平太陽時之差（±16 分內）。</li>
+    <li>畫面需呈現「輸入時鐘時間 → 校正後真太陽時」的對照，讓使用者看得出動了多少。</li>
+  </ol>
+  <div class="callout">
+    三層加起來可達 <strong>±20 分鐘</strong>，而時辰邊界正是這個量級——這是八字軟體最常見的錯誤來源。
+  </div>
+</section>
+
+<section>
+  <h2>排盤</h2>
+  <ol start="10">
+    <li>輸出<strong>四柱</strong>（年月日時的天干地支）、<strong>藏干</strong>、<strong>十神</strong>、<strong>五行分佈</strong>。</li>
+    <li>月柱依<strong>節</strong>（每 30° 黃經）換柱，非農曆月；年柱依<strong>立春</strong>換柱，與 v1 生肖判定一致。</li>
+    <li><strong>早晚子時</strong>：預設 23:00 換日柱；出生於 23:00–23:59 者明確標示另一派會得到不同日柱，並提供一鍵切換重算。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>用神</h2>
+  <ol start="13">
+    <li>演算法採<strong>扶抑為主 ＋ 調候修正 ＋ 從格例外偵測</strong>。</li>
+    <li>必須<strong>逐項攤開判斷依據</strong>：得令／得地／得勢、日主強弱結論、調候需求、是否觸發從格。</li>
+    <li>使用者可<strong>手動覆寫用神</strong>並重算匹配。</li>
+    <li>用神給喜用／忌神的<strong>分項判定，不給分數</strong>。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>姓名匹配</h2>
+  <ol start="17">
+    <li>匹配尺度用<strong>字形五行（康熙部首）</strong>；v1 的數理五行（筆畫尾數）留在五格區不變，兩者不混用，且畫面要說明兩把尺各自量什麼。</li>
+    <li>逐字評述：哪個字補到用神、哪個字傷了用神、哪個字中性。</li>
+    <li>依用神推薦<strong>候選字</strong>，以查證過的常用字表過濾，避免列出冷僻字。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>貫穿全案的原則（沿用 v1）</h2>
+  <ol start="20">
+    <li><strong>不合成單一總分</strong>——八字、五格、生肖、匹配各自分項判定。</li>
+    <li>每條規則的出處寫在資料檔的 <code>source</code> 欄位，並在「資料來源」區塊呈現。</li>
+    <li>流派衝突<strong>不擅自調和</strong>：選邊後在資料檔標明衝突與未採用的另一派。</li>
+    <li>引擎維持<strong>純函式</strong>——不讀當下時間、不讀隨機數。</li>
+    <li>罕字、資料範圍外、無法判定的情況一律<strong>明確回報，不猜</strong>。</li>
+    <li>授權維持 GPLv2。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>實作前必須查證的清單</h2>
+  <ol start="26">
+    <li>不得憑印象寫，逐項走 <code>/mio-istj</code> 查權威來源並在資料檔註明出處：
+      <ul>
+        <li>台灣夏令時間實施年份</li>
+        <li>214 部首 → 五行 對照表</li>
+        <li>十二節的黃經度數與節名</li>
+        <li>日柱干支的紀日錨點</li>
+        <li>五鼠遁（日干 → 時柱天干）與五虎遁（年干 → 月柱天干）</li>
+        <li>十神定義表</li>
+        <li>扶抑／調候／從格的具體判準與權重</li>
+        <li>常用字表（候選字過濾用）</li>
+      </ul>
+    </li>
+  </ol>
+</section>
+
+<section>
+  <h2>已知風險</h2>
+  <div class="callout">
+    第 13、14 項是本清單<strong>唯一無法靠對照權威資料驗收</strong>的部分——扶抑與調候的權重各家不同，最終仍是選邊。驗收方式只能是<strong>與指定的某一本書／某一站的範例命盤逐例對照</strong>，實作時要先選定對照基準並記錄在資料檔。
+  </div>
+</section>
+
+<section>
+  <h2>可重用的既有資產</h2>
+  <ul>
+    <li><code>tools/gen-lichun.mjs</code> 的太陽視黃經解法可直接推廣：目標黃經從 315°（立春）改成十二個節（每 30°）即得月柱換柱表；<strong>均時差</strong>也用同一套機制算，不必另找資料表。</li>
+    <li><code>src/data/components.json</code> 生成時已算出每字的康熙部首，字形五行只差一張 214 部首 → 五行 對照表。</li>
+    <li><code>src/data/kangxi-strokes.json</code> 涵蓋 BMP 27,584 字的筆畫，候選字推薦可直接用。</li>
+    <li><code>NameInput.birth</code> 是既有擴充點；<code>analyse()</code> 目前純函式不讀時鐘，擴充不會動到既有五格與生肖路徑。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Grill 決策紀錄</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>決策點</th><th>裁決</th><th>未採用</th></tr></thead>
+      <tbody>
+        <tr><td>v2 範圍</td><td>排盤 → 用神 → 姓名匹配</td><td class="no">只做排盤；跳過用神的簡化匹配</td></tr>
+        <tr><td>八字評分</td><td>維持不合總分，改寫 SPEC #10</td><td class="no">只在匹配段給分；恢復總分</td></tr>
+        <tr><td>用神流派</td><td>自動判＋攤開依據＋允許覆寫</td><td class="no">純扶抑；完全不自動判</td></tr>
+        <tr><td>缺時辰</td><td>必填，缺就不跑 v2</td><td class="no">三柱模式；跑完 12 時辰列差異</td></tr>
+        <tr><td>地區修正</td><td>縣市下拉＋經度差＋均時差</td><td class="no">只做經度差；完全不修正</td></tr>
+        <tr><td>夏令時間</td><td>自動套用＋明示告知</td><td class="no">使用者自己勾；忽略</td></tr>
+        <tr><td>早晚子時</td><td>預設 23:00 換日＋可切換</td><td class="no">固定 23:00；固定 00:00</td></tr>
+        <tr><td>匹配尺度</td><td>字形五行（部首）</td><td class="no">沿用數理五行；兩套並列</td></tr>
+        <tr><td>匹配輸出</td><td>評述＋依用神推薦候選字</td><td class="no">只評述；完整取名輔助</td></tr>
+        <tr><td>大運流年</td><td>不做</td><td class="no">只做大運；大運＋流年</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>對 SPEC.md 的修正</h2>
+  <p>SPEC.md 第 10 條原寫「八字排盤＋用神判定＋<strong>八字評分</strong>」，其中「八字評分」與第 6 條「不合成單一總分」相衝突。</p>
+  <p>2026-08-10 使用者裁決：<strong>維持不合總分</strong>，「八字評分」改為「<strong>八字分項判定</strong>」。SPEC.md 已同步標註此修正，並指向本檔。</p>
+</section>
+
+<footer>數名其妙 — 算得出來，信不信隨你</footer>
+
+</div>
+</body>
+</html>
