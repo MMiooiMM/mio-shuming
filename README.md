@@ -31,9 +31,12 @@ curl -o tools/raw/Unihan.zip      https://www.unicode.org/Public/UCD/latest/ucd/
 curl -o tools/raw/CJKRadicals.txt https://www.unicode.org/Public/UCD/latest/ucd/CJKRadicals.txt
 curl -o tools/raw/ids.txt         https://raw.githubusercontent.com/cjkvi/cjkvi-ids/master/ids.txt
 unzip -o tools/raw/Unihan.zip -d tools/raw/
+# gen-solar-terms.mjs 不需要下載檔，它純算；其 golden check 的對照值抄自
+# 中央氣象署《天文年曆》，出處寫在腳本註解裡。
 
+npm run gen:data                    # 依序跑下列三支
 node tools/gen-kangxi-strokes.mjs   # -> kangxi-strokes.json
-node tools/gen-lichun.mjs           # -> lichun.json
+node tools/gen-solar-terms.mjs      # -> solar-terms.json
 node tools/gen-components.mjs       # -> components.json（相依 zodiac-radicals.json）
 ```
 
@@ -42,7 +45,7 @@ node tools/gen-components.mjs       # -> components.json（相依 zodiac-radical
 | 檔案 | 來源 | 說明 |
 |---|---|---|
 | `kangxi-strokes.json` | Unicode Han Database `kRSUnicode` ＋ `CJKRadicals.txt` | 康熙筆畫 ＝ 康熙部首本字筆畫 ＋ 部首外筆畫。**不用** `kTotalStrokes`（那是現代筆畫：江 6 而非 7、陳 10 而非 16）。涵蓋 BMP 27,584 字 |
-| `lichun.json` | Meeus《Astronomical Algorithms》ch.25 ＋ Espenak & Meeus ΔT | 1900–2100 各年立春時刻（UTC+8） |
+| `solar-terms.json` | Meeus《Astronomical Algorithms》ch.25／ch.28 ＋ Espenak & Meeus ΔT，對照**中央氣象署《天文年曆》** | 1900–2100 各年**十二節**時刻（UTC+8）＋均時差表。立春即黃經 315° 的那個節——年柱（生肖）與月柱共用這一份，不另立表 |
 | `components.json` | [cjkvi-ids](https://github.com/cjkvi/cjkvi-ids)（源自 CHISE） | 每字含哪些生肖字根；含康熙部首變體正規化（氵→水、艹→艸…） |
 | `zodiac-radicals.json` | 網路主流通行版（檔內註明 URL 與原文） | 十二生肖喜忌字根、地支六合三合沖害 |
 | `numerology-81.json` | 網路主流通行版（檔內註明 URL 與原文） | 81 數理吉凶、五格假1 規則、五行配屬與生剋 |

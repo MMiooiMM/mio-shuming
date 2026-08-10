@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { fateOf, kangxiStrokeCount, lichunOf } from '../data/index.ts';
+import {
+  JIE,
+  equationOfTimeMinutes,
+  fateOf,
+  jieOfYear,
+  kangxiStrokeCount,
+  lichunOf,
+} from '../data/index.ts';
 import { analyse, computeGrids, computeSancai, computeWuxing, judgeChars, zodiacOf } from './index.ts';
 
 describe('康熙筆畫', () => {
@@ -177,6 +184,102 @@ describe('立春分界換算生肖', () => {
   it('超出立春資料範圍回傳 undefined', () => {
     expect(zodiacOf(1899, 6, 1)).toBeUndefined();
     expect(zodiacOf(2101, 6, 1)).toBeUndefined();
+  });
+});
+
+describe('十二節（月柱換柱用）', () => {
+  it('十二節的黃經與所起月支正確', () => {
+    expect(JIE.map((j) => j.name)).toEqual([
+      '小寒', '立春', '驚蟄', '清明', '立夏', '芒種',
+      '小暑', '立秋', '白露', '寒露', '立冬', '大雪',
+    ]);
+    // 每節相距 30°，立春 315° 起寅月（zh.wikipedia.org/wiki/节气）
+    expect(JIE.map((j) => j.deg)).toEqual([285, 315, 345, 15, 45, 75, 105, 135, 165, 195, 225, 255]);
+    expect(JIE.map((j) => j.branch)).toEqual([
+      '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥', '子',
+    ]);
+  });
+
+  it('每個西元月恰好落入一個節，且逐年遞增', () => {
+    for (const y of [1900, 1985, 2000, 2025, 2100]) {
+      const terms = jieOfYear(y)!;
+      expect(terms).toHaveLength(12);
+      terms.forEach((t, i) => expect(t.month, `${y} 第 ${i} 節`).toBe(i + 1));
+      for (let i = 1; i < terms.length; i++) {
+        const key = (t: { month: number; day: number; hour: number; minute: number }) =>
+          ((t.month * 31 + t.day) * 24 + t.hour) * 60 + t.minute;
+        expect(key(terms[i]!)).toBeGreaterThan(key(terms[i - 1]!));
+      }
+    }
+  });
+
+  // 交通部中央氣象署《天文年曆》公布值。生成腳本已對 16 筆做 ±15 分容差檢查，
+  // 這裡守住「日期」這條更嚴格的線 —— 日期一錯就換錯月柱。
+  it.each([
+    [2025, '小寒', 1, 5], [2025, '立春', 2, 3], [2025, '驚蟄', 3, 5], [2025, '清明', 4, 4],
+    [2025, '立夏', 5, 5], [2025, '芒種', 6, 5], [2025, '小暑', 7, 7], [2025, '立秋', 8, 7],
+    [2025, '白露', 9, 7], [2025, '寒露', 10, 8], [2025, '立冬', 11, 7], [2025, '大雪', 12, 7],
+    [2023, '立春', 2, 4], [2023, '驚蟄', 3, 6],
+    [2016, '立春', 2, 4], [2016, '驚蟄', 3, 5],
+  ])('%i 年 %s 為 %i/%i（中央氣象署）', (year, name, month, day) => {
+    const t = jieOfYear(year as number)![JIE.findIndex((j) => j.name === name)]!;
+    expect(t.month).toBe(month);
+    expect(t.day).toBe(day);
+  });
+
+  it('立春仍由同一份節氣表供應（v1 生肖與 v2 月柱共用真相源）', () => {
+    const lichun = lichunOf(2025)!;
+    const fromJie = jieOfYear(2025)![JIE.findIndex((j) => j.name === '立春')]!;
+    expect(lichun).toEqual(fromJie);
+  });
+});
+
+describe('均時差', () => {
+  it('極值落在天文學已知位置', () => {
+    // 全年最大約 +16.4 分（11 月初）、最小約 −14.2 分（2 月中）
+    expect(equationOfTimeMinutes(11, 3)!).toBeGreaterThan(16);
+    expect(equationOfTimeMinutes(11, 3)!).toBeLessThan(17);
+    expect(equationOfTimeMinutes(2, 11)!).toBeLessThan(-14);
+    expect(equationOfTimeMinutes(2, 11)!).toBeGreaterThan(-15);
+  });
+
+  it('四個零點附近確實換號', () => {
+    // 約 4/15、6/13、9/1、12/25
+    expect(Math.sign(equationOfTimeMinutes(4, 10)!)).not.toBe(Math.sign(equationOfTimeMinutes(4, 20)!));
+    expect(Math.sign(equationOfTimeMinutes(6, 8)!)).not.toBe(Math.sign(equationOfTimeMinutes(6, 18)!));
+    expect(Math.sign(equationOfTimeMinutes(8, 27)!)).not.toBe(Math.sign(equationOfTimeMinutes(9, 6)!));
+    expect(Math.sign(equationOfTimeMinutes(12, 20)!)).not.toBe(Math.sign(equationOfTimeMinutes(12, 30)!));
+  });
+
+  it('全年每一天都在 ±17 分內（含 2/29，共 366 天）', () => {
+    const daysInMonth = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    let checked = 0;
+    for (let m = 1; m <= 12; m++) {
+      for (let d = 1; d <= daysInMonth[m - 1]!; d++) {
+        const v = equationOfTimeMinutes(m, d);
+        expect(v, `${m}/${d} 應有值`).toBeDefined();
+        expect(Math.abs(v!), `${m}/${d}`).toBeLessThan(17);
+        checked++;
+      }
+    }
+    expect(checked).toBe(366);
+  });
+
+  it('非法日期回傳 undefined，不猜成別的日子', () => {
+    // 靜默夾取或溢位會讓 13 月變成 1 月、2/30 變成 3/1 —— 違反 SPEC-v2 #24。
+    expect(equationOfTimeMinutes(13, 1)).toBeUndefined();
+    expect(equationOfTimeMinutes(0, 1)).toBeUndefined();
+    expect(equationOfTimeMinutes(2, 30)).toBeUndefined();
+    expect(equationOfTimeMinutes(4, 31)).toBeUndefined();
+    expect(equationOfTimeMinutes(1, 0)).toBeUndefined();
+    expect(equationOfTimeMinutes(1, 1.5)).toBeUndefined();
+    expect(equationOfTimeMinutes(Number.NaN, 1)).toBeUndefined();
+    expect(equationOfTimeMinutes(1, Number.NaN)).toBeUndefined();
+  });
+
+  it('2/29 合法（表以閏年為基準），且與 3/1 不同天', () => {
+    expect(equationOfTimeMinutes(2, 29)).toBeDefined();
+    expect(equationOfTimeMinutes(2, 29)).not.toBe(equationOfTimeMinutes(3, 1));
   });
 });
 

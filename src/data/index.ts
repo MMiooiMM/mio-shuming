@@ -2,7 +2,7 @@
 // pure lookup; no analysis logic lives in this module.
 
 import kangxiStrokes from './kangxi-strokes.json';
-import lichunTable from './lichun.json';
+import solarTerms from './solar-terms.json';
 import componentIndex from './components.json';
 import zodiacTable from './zodiac-radicals.json';
 import numerology from './numerology-81.json';
@@ -47,21 +47,37 @@ export function kangxiStrokeCount(ch: string): number | undefined {
   return undefined;
 }
 
-// --- 立春 -------------------------------------------------------------------
+// --- 節氣（十二節） ----------------------------------------------------------
+//
+// 年柱（生肖）與月柱共用這一份資料 —— 立春只是黃經 315° 的那個節，
+// 兩者若各自一份表就可能在邊界上互相矛盾（SPEC-v2 #11）。
 
-const lichunYears = lichunTable.years as Record<string, string>;
-export const LICHUN_RANGE = lichunTable.range as [number, number];
+const jieYears = solarTerms.years as Record<string, string[]>;
+export const LICHUN_RANGE = solarTerms.range as [number, number];
+/** 節氣資料涵蓋的西元年範圍，與 LICHUN_RANGE 同義（立春屬十二節之一）。 */
+export const SOLAR_TERM_RANGE = LICHUN_RANGE;
 
-export interface Lichun {
+export interface JieDefinition {
+  name: string;
+  /** 太陽視黃經度數。 */
+  deg: number;
+  /** 此節所起始的月支。 */
+  branch: string;
+}
+
+export const JIE: JieDefinition[] = solarTerms.jie as JieDefinition[];
+
+export interface SolarTermInstant {
   month: number;
   day: number;
   hour: number;
   minute: number;
 }
 
-/** 立春 instant (UTC+8) for a Gregorian year, or `undefined` outside the table. */
-export function lichunOf(year: number): Lichun | undefined {
-  const raw = lichunYears[String(year)];
+/** 別名，保留 v1 的命名。 */
+export type Lichun = SolarTermInstant;
+
+function parseInstant(raw: string | undefined): SolarTermInstant | undefined {
   if (!raw) return undefined;
   const m = /^(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(raw);
   if (!m) return undefined;
@@ -72,6 +88,55 @@ export function lichunOf(year: number): Lichun | undefined {
     minute: Number(m[4]),
   };
 }
+
+/** 某年第 `index` 個節的時刻（UTC+8）；index 對應 JIE 陣列。 */
+export function jieOf(year: number, index: number): SolarTermInstant | undefined {
+  return parseInstant(jieYears[String(year)]?.[index]);
+}
+
+/** 某年全部十二節的時刻（UTC+8），順序同 JIE。 */
+export function jieOfYear(year: number): SolarTermInstant[] | undefined {
+  const raw = jieYears[String(year)];
+  if (!raw) return undefined;
+  const out = raw.map(parseInstant);
+  return out.every((t): t is SolarTermInstant => t !== undefined) ? out : undefined;
+}
+
+const LICHUN_INDEX = JIE.findIndex((j) => j.name === '立春');
+
+/** 立春 instant (UTC+8) for a Gregorian year, or `undefined` outside the table. */
+export function lichunOf(year: number): Lichun | undefined {
+  return jieOf(year, LICHUN_INDEX);
+}
+
+// --- 均時差 -----------------------------------------------------------------
+
+const eotMinutes = solarTerms.equationOfTime.minutes as number[];
+
+/** 各月 1 日在閏年中的前置天數，用來把（月, 日）換成閏年日序。 */
+const CUMULATIVE_DAYS = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
+/** 閏年各月天數 —— 2/29 合法，因為對照表以閏年（2000）為基準。 */
+const DAYS_IN_MONTH = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+/**
+ * 均時差（真太陽時 − 平太陽時），單位分鐘；日期非法時回傳 `undefined`。
+ *
+ * 表以 2000 年（閏年）逐日計算，所以查表要用「閏年日序」——平年的 3 月 1 日
+ * 一樣取表中的 2000-03-01，而不是平年的第 59 天。
+ *
+ * 跨 1900–2100 的最大漂移經量測為
+ * `solarTerms.equationOfTime.maxDriftSecondsOverRange` 秒，對時辰邊界判定可忽略。
+ *
+ * 非法輸入不猜（SPEC-v2 #24）：月份越界、當月不存在的日、或非整數，一律回
+ * `undefined`，而不是靜默換算成別的日期。
+ */
+export function equationOfTimeMinutes(month: number, day: number): number | undefined {
+  if (!Number.isInteger(month) || month < 1 || month > 12) return undefined;
+  if (!Number.isInteger(day) || day < 1 || day > DAYS_IN_MONTH[month - 1]!) return undefined;
+  return eotMinutes[CUMULATIVE_DAYS[month - 1]! + day - 1];
+}
+
+export const SOLAR_TERM_SOURCE = solarTerms.source;
 
 // --- 字根 -------------------------------------------------------------------
 
@@ -159,5 +224,5 @@ export const ZODIAC_SOURCE = zodiacTable.source;
 export const NUMEROLOGY_SOURCE = numerology.source;
 export const WUGE_RULES = numerology.wugeRules;
 export const KANGXI_SOURCE = kangxiStrokes.source;
-export const LICHUN_SOURCE = lichunTable.source;
+export const LICHUN_SOURCE = solarTerms.source;
 export const COMPONENT_SOURCE = componentIndex.source;

@@ -60,7 +60,11 @@ function sourcesSection(): string {
     ['五行配屬・生剋', NUMEROLOGY_SOURCE.wuxing.note, NUMEROLOGY_SOURCE.wuxing.url],
     ['生肖字根喜忌', ZODIAC_SOURCE.radicals.note, ZODIAC_SOURCE.radicals.url],
     ['地支六合三合沖害', ZODIAC_SOURCE.earthlyBranches.note, ZODIAC_SOURCE.earthlyBranches.url],
-    ['立春時刻', `${LICHUN_SOURCE.algorithm}。${LICHUN_SOURCE.deltaT}`, LICHUN_SOURCE.url],
+    [
+      '立春時刻',
+      `${LICHUN_SOURCE.algorithm}。${LICHUN_SOURCE.deltaT}。已對照 ${LICHUN_SOURCE.verifiedAgainst}`,
+      LICHUN_SOURCE.verifiedAgainstUrl,
+    ],
     [
       '字根拆解（IDS）',
       `${COMPONENT_SOURCE.ids}（授權 ${COMPONENT_SOURCE.license}）。${COMPONENT_SOURCE.variantTable}`,
