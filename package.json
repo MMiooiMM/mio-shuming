@@ -1,7 +1,9 @@
 {
-  "name": "mib",
+  "name": "shuming",
   "private": true,
   "version": "0.1.0",
+  "description": "數名其妙 — 康熙筆畫三才五格、立春換算生肖字根、五行分佈的姓名學分析",
+  "license": "GPL-2.0-only",
   "type": "module",
   "scripts": {
     "dev": "vite",
