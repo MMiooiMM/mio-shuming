@@ -70,6 +70,66 @@
           <span class="field__hint">生肖依<strong>立春</strong>分界換算，非農曆春節</span>
         </fieldset>
 
+        <fieldset class="field field--date">
+          <legend class="field__label">出生時間</legend>
+          <div class="form__row form__row--date">
+            <label class="sr-only" for="hour">時</label>
+            <input id="hour" name="hour" type="number" inputmode="numeric" placeholder="時 0–23" min="0" max="23" />
+            <label class="sr-only" for="minute">分</label>
+            <input id="minute" name="minute" type="number" inputmode="numeric" placeholder="分 0–59" min="0" max="59" />
+          </div>
+          <span class="field__hint">
+            八字排盤需要時辰。<strong>留空則只做姓名分析</strong>，不產出八字。
+          </span>
+        </fieldset>
+
+        <div class="form__row">
+          <label class="field">
+            <span class="field__label">出生地</span>
+            <!-- 選項由 main.ts 依 src/data/locations.json 填入，避免縣市清單有兩份。 -->
+            <select id="county" name="county"></select>
+            <span class="field__hint">用來把時鐘時間換算成當地真太陽時</span>
+          </label>
+          <label class="field" id="longitude-field" hidden>
+            <span class="field__label">出生地經度</span>
+            <input
+              id="longitude"
+              name="longitude"
+              type="number"
+              inputmode="decimal"
+              step="0.0001"
+              min="-180"
+              max="180"
+              placeholder="121.5"
+            />
+            <span class="field__hint">東經為正、西經為負</span>
+          </label>
+        </div>
+
+        <div class="form__row" id="overseas-field" hidden>
+          <label class="field">
+            <span class="field__label">時區中央經線</span>
+            <input
+              id="meridian"
+              name="meridian"
+              type="number"
+              inputmode="decimal"
+              step="15"
+              min="-180"
+              max="180"
+              placeholder="120"
+            />
+            <span class="field__hint">
+              UTC+8 為 120、UTC+9 為 135，以此類推。<strong>必填</strong>，不預設為台灣的 120°
+            </span>
+          </label>
+          <label class="field field--check">
+            <input id="manualDst" name="manualDst" type="checkbox" />
+            <span>出生時當地正在實施夏令時間（撥快 1 小時）</span>
+            <span class="field__hint">台灣的年份表只在選擇縣市時自動套用</span>
+          </label>
+        </div>
+
         <button type="submit" class="button">開始分析</button>
       </form>
 

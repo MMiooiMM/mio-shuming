@@ -11,9 +11,10 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "gen:data": "node tools/gen-kangxi-strokes.mjs && node tools/gen-solar-terms.mjs && node tools/gen-components.mjs"
+    "gen:data": "node tools/gen-kangxi-strokes.mjs && node tools/gen-solar-terms.mjs && node tools/gen-components.mjs && node tools/gen-locations.mjs"
   },
   "devDependencies": {
+    "jsdom": "^25.0.1",
     "typescript": "~5.6.3",
     "vite": "^5.4.10",
     "vitest": "^2.1.5"

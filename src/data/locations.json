@@ -1,0 +1,171 @@
+{
+  "$comment": "台灣 22 縣市代表經度。longitude 是該縣市各行政區中心點經度的中位數（推導值，非官方定義）；min/max 為同縣市的經度範圍，用來呈現誤差。由 tools/gen-locations.mjs 產生，不要手改。",
+  "source": {
+    "dataset": "政府資料開放平臺 dataset 25489「3碼郵遞區號與行政區中心點經緯度對照表」",
+    "provider": "中華郵政股份有限公司",
+    "license": "政府資料開放授權條款－第 1 版",
+    "url": "https://data.gov.tw/dataset/25489",
+    "file": "https://www.post.gov.tw/post/download/1050812_行政區經緯度(toPost).xml",
+    "derivation": "縣市代表經度＝該縣市各鄉鎮市區中心點經度的中位數；官方未定義縣市代表點，此為本站推導。",
+    "excluded": "已排除無常住人口的離島 宜蘭縣釣魚臺列嶼、高雄市東沙群島、高雄市南沙群島（經度離本島 2–5 度，會使所屬縣市範圍失真）",
+    "districtCount": 371
+  },
+  "standardMeridian": 120,
+  "timezoneOffsetMinutes": 480,
+  "counties": [
+    {
+      "name": "臺北市",
+      "longitude": 121.5471,
+      "min": 121.498,
+      "max": 121.6098,
+      "districts": 12
+    },
+    {
+      "name": "新北市",
+      "longitude": 121.5156,
+      "min": 121.3466,
+      "max": 121.9182,
+      "districts": 29
+    },
+    {
+      "name": "桃園市",
+      "longitude": 121.2147,
+      "min": 121.0678,
+      "max": 121.3755,
+      "districts": 13
+    },
+    {
+      "name": "臺中市",
+      "longitude": 120.6733,
+      "min": 120.5284,
+      "max": 121.1402,
+      "districts": 29
+    },
+    {
+      "name": "臺南市",
+      "longitude": 120.2924,
+      "min": 120.1006,
+      "max": 120.5441,
+      "districts": 37
+    },
+    {
+      "name": "高雄市",
+      "longitude": 120.3383,
+      "min": 120.1981,
+      "max": 120.8523,
+      "districts": 38
+    },
+    {
+      "name": "基隆市",
+      "longitude": 121.7434,
+      "min": 121.6836,
+      "max": 121.7784,
+      "districts": 7
+    },
+    {
+      "name": "新竹市",
+      "longitude": 120.9491,
+      "min": 120.9237,
+      "max": 120.9928,
+      "districts": 3
+    },
+    {
+      "name": "嘉義市",
+      "longitude": 120.4477,
+      "min": 120.4249,
+      "max": 120.4706,
+      "districts": 2
+    },
+    {
+      "name": "新竹縣",
+      "longitude": 121.0754,
+      "min": 120.9949,
+      "max": 121.2819,
+      "districts": 13
+    },
+    {
+      "name": "苗栗縣",
+      "longitude": 120.8597,
+      "min": 120.6882,
+      "max": 121.0682,
+      "districts": 18
+    },
+    {
+      "name": "彰化縣",
+      "longitude": 120.5168,
+      "min": 120.3113,
+      "max": 120.6294,
+      "districts": 26
+    },
+    {
+      "name": "南投縣",
+      "longitude": 120.7859,
+      "min": 120.6774,
+      "max": 121.1444,
+      "districts": 13
+    },
+    {
+      "name": "雲林縣",
+      "longitude": 120.3494,
+      "min": 120.1414,
+      "max": 120.6155,
+      "districts": 20
+    },
+    {
+      "name": "嘉義縣",
+      "longitude": 120.4079,
+      "min": 120.1739,
+      "max": 120.7596,
+      "districts": 18
+    },
+    {
+      "name": "屏東縣",
+      "longitude": 120.5846,
+      "min": 120.371,
+      "max": 120.8436,
+      "districts": 33
+    },
+    {
+      "name": "宜蘭縣",
+      "longitude": 121.7586,
+      "min": 121.504,
+      "max": 121.8458,
+      "districts": 12
+    },
+    {
+      "name": "花蓮縣",
+      "longitude": 121.4699,
+      "min": 121.1804,
+      "max": 121.6138,
+      "districts": 13
+    },
+    {
+      "name": "臺東縣",
+      "longitude": 121.1332,
+      "min": 120.8355,
+      "max": 121.5508,
+      "districts": 16
+    },
+    {
+      "name": "澎湖縣",
+      "longitude": 119.5501,
+      "min": 119.4339,
+      "max": 119.6446,
+      "districts": 6
+    },
+    {
+      "name": "金門縣",
+      "longitude": 118.3604,
+      "min": 118.2279,
+      "max": 119.4527,
+      "districts": 6
+    },
+    {
+      "name": "連江縣",
+      "longitude": 119.9666,
+      "min": 119.9311,
+      "max": 120.4903,
+      "districts": 4
+    }
+  ]
+}

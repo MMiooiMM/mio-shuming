@@ -439,3 +439,137 @@ input[type='number']::-webkit-inner-spin-button {
     font-size: 2rem;
   }
 }
+
+/* --- v2：時間校正與八字命盤 ------------------------------------------------ */
+
+/* 下拉沿用 input 的外觀，免得表單裡兩種欄位長得不一樣。 */
+select {
+  width: 100%;
+  min-width: 0;
+  font-size: 1rem;
+  font-family: inherit;
+  padding: 0.6rem 0.7rem;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.field--check {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.field--check input {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.field--check .field__hint {
+  flex-basis: 100%;
+}
+
+.conversion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+}
+
+.conversion__from {
+  color: var(--ink-soft);
+}
+
+.conversion__arrow {
+  color: var(--accent);
+}
+
+.conversion__to {
+  font-weight: 600;
+  font-size: 1.0625rem;
+}
+
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+}
+
+.pillar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: center;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.5rem 0.35rem;
+  min-width: 0;
+}
+
+.pillar__pos,
+.pillar__shishen {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+
+.pillar__ganzhi {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  /* 干支直排，四柱在窄螢幕才排得下。 */
+  writing-mode: vertical-rl;
+  letter-spacing: 0.1em;
+}
+
+.pillar__hidden {
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.pillar__hidden small {
+  display: block;
+  font-size: 0.625rem;
+  color: var(--ink-soft);
+}
+
+.dist-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+}
+
+.dist-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dist-row__label {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  flex: 0 0 5rem;
+}
+
+.button--inline {
+  width: auto;
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+}

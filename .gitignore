@@ -7,6 +7,8 @@ dist/
 #   curl -o tools/raw/Unihan.zip      https://www.unicode.org/Public/UCD/latest/ucd/Unihan.zip
 #   curl -o tools/raw/CJKRadicals.txt https://www.unicode.org/Public/UCD/latest/ucd/CJKRadicals.txt
 #   curl -o tools/raw/ids.txt         https://raw.githubusercontent.com/cjkvi/cjkvi-ids/master/ids.txt
+#   curl -L -o tools/raw/post-districts.xml \
+#     "https://www.post.gov.tw/post/download/1050812_%E8%A1%8C%E6%94%BF%E5%8D%80%E7%B6%93%E7%B7%AF%E5%BA%A6(toPost).xml"
 tools/raw/
 
 # Playwright MCP scratch output

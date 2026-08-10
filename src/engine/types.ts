@@ -8,8 +8,14 @@ export interface NameInput {
   surname: string;
   /** 名：1–2 字。 */
   givenName: string;
-  /** 西元出生年月日。 */
-  birth: { year: number; month: number; day: number };
+  /**
+   * 西元出生年月日，可另附時分。
+   *
+   * 有時分時，生肖改以**立春的精確時刻**分界，與 v2 年柱同一判準——立春當天
+   * 出生者才不會出現「生肖說牛、年柱說鼠」的矛盾（SPEC-v2 #11）。時分應填
+   * **已校正的真太陽時**（見 `src/bazi/time-correction.ts`），與排盤的輸入一致。
+   */
+  birth: { year: number; month: number; day: number; hour?: number; minute?: number };
 }
 
 export interface CharStrokes {

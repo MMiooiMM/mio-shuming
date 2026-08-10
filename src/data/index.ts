@@ -8,6 +8,8 @@ import zodiacTable from './zodiac-radicals.json';
 import numerology from './numerology-81.json';
 import ganzhi from './ganzhi.json';
 import hiddenStems from './hidden-stems.json';
+import locations from './locations.json';
+import dstTaiwan from './dst-taiwan.json';
 
 interface StrokeBlock {
   start: number;
@@ -139,6 +141,45 @@ export function equationOfTimeMinutes(month: number, day: number): number | unde
 }
 
 export const SOLAR_TERM_SOURCE = solarTerms.source;
+
+// --- 出生地經度 / 夏令時間 ----------------------------------------------------
+
+export interface County {
+  name: string;
+  /** 代表經度（東經為正）——該縣市各行政區中心點經度的中位數。 */
+  longitude: number;
+  /** 同縣市各行政區中心點的經度範圍，用來呈現「縣市代表點」本身的誤差。 */
+  min: number;
+  max: number;
+  districts: number;
+}
+
+export const COUNTIES = locations.counties as County[];
+/** 台灣標準時間的中央經線（東經 120°）。 */
+export const STANDARD_MERIDIAN = locations.standardMeridian;
+export const TAIWAN_OFFSET_MINUTES = locations.timezoneOffsetMinutes;
+export const LOCATION_SOURCE = locations.source;
+
+export function countyOf(name: string): County | undefined {
+  return COUNTIES.find((c) => c.name === name);
+}
+
+export interface DstPeriod {
+  year: number;
+  /** `MM-DD`。 */
+  start: string;
+  end: string;
+  name: string;
+  note?: string;
+}
+
+export const DST_PERIODS = dstTaiwan.periods as DstPeriod[];
+/** 夏令時間期間時鐘撥快的分鐘數（60）。 */
+export const DST_OFFSET_MINUTES = dstTaiwan.offsetMinutes;
+export const DST_SOURCE = dstTaiwan.source;
+/** 1945 年僅於中國大陸實施，未在台灣實施——刻意不列入 `DST_PERIODS`。 */
+export const DST_EXCLUDED = dstTaiwan.excluded;
+export const DST_CAVEAT = dstTaiwan.caveat;
 
 // --- 天干地支 ---------------------------------------------------------------
 

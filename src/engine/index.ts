@@ -35,7 +35,7 @@ export function analyse(input: NameInput): AnalysisResult {
     return { ok: false, reason: `姓名只接受中文字，請移除：${nonHan.join('、')}` };
   }
 
-  const { year, month, day } = input.birth;
+  const { year, month, day, hour, minute } = input.birth;
   if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
     return { ok: false, reason: '請填寫完整的西元出生年月日。' };
   }
@@ -74,7 +74,16 @@ export function analyse(input: NameInput): AnalysisResult {
     { surname, givenName },
   );
   const sancai = computeSancai(grids);
-  const zodiac = analyseZodiac(year, month, day, all);
+  // 時分兩者俱全才拿來分界；只有其中一個是輸入殘缺，寧可退回「只看日期」
+  // 並照實回報 boundaryAmbiguous，也不要拿 0 分當真。
+  const time =
+    Number.isInteger(hour) && Number.isInteger(minute)
+      ? { hour: hour!, minute: minute! }
+      : undefined;
+  if (time && (time.hour < 0 || time.hour > 23 || time.minute < 0 || time.minute > 59)) {
+    return { ok: false, reason: '出生時間不正確（時 0–23、分 0–59）。' };
+  }
+  const zodiac = analyseZodiac(year, month, day, all, time);
   if (!zodiac) {
     return { ok: false, reason: '無法換算生肖（立春資料缺漏），請回報此問題。' };
   }
