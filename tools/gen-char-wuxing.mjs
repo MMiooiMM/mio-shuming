@@ -184,6 +184,30 @@ for (const ch of common) {
   }
 }
 
+// --- 人工補充字 ---------------------------------------------------------------
+//
+// 上游《通用規範漢字表》未收、對帳來源（zhenyangze）也查無，但實際取名會用到的字。
+// 補充條件：至少一個「網路主流通行版」同級來源明載五行，且遍查不到第二說。
+// 每字必附來源 URL 與查證日期。若上游日後收錄了同字，這裡會直接報錯——
+// 屆時必須重新對帳，不准無聲讓任何一邊蓋過另一邊。
+const MANUAL_SUPPLEMENTS = [
+  {
+    char: '玹',
+    wuxing: '金',
+    source: 'https://www.yw11.com/zidian/11679/（起名网字典：「玹字五行 金」，康熙筆畫 10 與本站 kangxi-strokes 一致）',
+    verifiedAt: '2026-08-11',
+    note: '使用者提報（玉字旁屬金）；ben-hua 8,105 字未收、zhenyangze 亦無此字，查無二說。',
+  },
+];
+
+for (const { char, wuxing } of MANUAL_SUPPLEMENTS) {
+  if (!ELEMENTS.includes(wuxing)) throw new Error(`人工補充字「${char}」的五行「${wuxing}」不合法。`);
+  if (byChar.has(char) || undecided.has(char)) {
+    throw new Error(`人工補充字「${char}」上游已收錄——請重新對帳後把它移出 MANUAL_SUPPLEMENTS。`);
+  }
+  byChar.set(char, wuxing);
+}
+
 // --- 打包 -------------------------------------------------------------------
 //
 // 每個五行一條字串（每字 2 bytes），比逐字物件小一個數量級。
@@ -258,6 +282,11 @@ const out = {
   mergeCollisions: collisions,
   /** 繁簡橋接時多個簡體對應指到不同五行者，同樣不進索引。 */
   bridgeConflicts,
+  /**
+   * 上游未收、人工查證後補進索引的字。來源同為「網路主流通行版」等級，
+   * 不高於也不低於主資料的可信度；條件與防呆見 tools/gen-char-wuxing.mjs。
+   */
+  manualSupplements: MANUAL_SUPPLEMENTS,
   stats: {
     rows: rows.length,
     /** 上游 wuxing 欄為空的列——那是來源本身的缺口，不是解析失敗。 */
@@ -265,6 +294,7 @@ const out = {
     bridgedFromSimplified: bridged,
     mergeConflicts: collisions.length,
     bridgeConflicts: bridgeConflicts.length,
+    manualSupplements: MANUAL_SUPPLEMENTS.length,
     indexedChars: byChar.size,
     commonChars: common.length,
     commonCovered: covered,

@@ -123,6 +123,13 @@ describe('逐字評述（SPEC-v2 #18）', () => {
     expect(r.chars[0]!.explanation).toContain('不替它選邊');
   });
 
+  it('人工補充字：玹（上游未收，人工查證屬金）', () => {
+    // 上游《通用規範漢字表》與 zhenyangze 對帳源都沒收「玹」；
+    // 依 tools/gen-char-wuxing.mjs 的 MANUAL_SUPPLEMENTS 補入（來源：起名网字典）。
+    expect(charElementOf('玹')).toBe('金');
+    expect(kangxiStrokeCount('玹')).toBe(10); // 與來源頁「康熙筆畫 10」一致
+  });
+
   it('喜用為空時明講無從評述，不假裝有結論', () => {
     const r = matchName(['森'], [], ['木', '火', '土', '金', '水']);
     expect(r.summary).toContain('無從評述');
