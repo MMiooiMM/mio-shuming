@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>數名其妙 v3 — 凍結 Acceptance</title>
+<style>
+:root{
+  --bg:#f7f5f1; --surface:#fff; --ink:#1f1c19; --soft:#5c554d; --line:#e2ddd4;
+  --accent:#8c2f1f; --accent-soft:#f3e6e2;
+  --warn:#8a6d1f; --warn-soft:#f6efdc;
+  --good:#2f6b3f; --good-soft:#e6f0e8;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#171513; --surface:#211e1b; --ink:#f0ebe4; --soft:#b3aaa0; --line:#362f2a;
+    --accent:#e2856f; --accent-soft:#3a2521;
+    --warn:#e0c274; --warn-soft:#322a1a;
+    --good:#8fce9f; --good-soft:#22301f;
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink); font-size:16px; line-height:1.75;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+.wrap{max-width:44rem;margin:0 auto;padding:1.5rem 1rem 4rem}
+header{text-align:center;margin-bottom:1.75rem}
+h1{font-size:1.35rem;margin:0;letter-spacing:.18em;text-indent:.18em}
+.sub{margin:.4rem 0 0;font-size:.8125rem;color:var(--soft)}
+.frozen{
+  display:inline-block;margin-top:.6rem;padding:.15rem .7rem;border-radius:999px;
+  background:var(--good-soft);color:var(--good);font-size:.75rem;font-weight:600;
+}
+section{
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:1rem 1.1rem;margin-bottom:1rem;
+}
+h2{
+  font-size:1rem;margin:0 0 .6rem;letter-spacing:.06em;
+  padding-bottom:.5rem;border-bottom:1px solid var(--line);
+}
+ol{margin:0;padding-left:1.4rem}
+ol li{margin:.5rem 0}
+ol li::marker{color:var(--accent);font-weight:600}
+strong{color:var(--accent)}
+.note{font-size:.8125rem;color:var(--soft);margin:.35rem 0 0}
+.callout{
+  border-left:3px solid var(--warn);background:var(--warn-soft);
+  padding:.7rem .85rem;border-radius:6px;font-size:.875rem;margin:.5rem 0 0;
+}
+.callout strong{color:var(--warn)}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:.5rem -.35rem 0}
+table{border-collapse:collapse;width:100%;min-width:33rem;font-size:.8125rem}
+th,td{text-align:left;padding:.45rem .55rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--soft);font-weight:600;white-space:nowrap}
+td:first-child{white-space:nowrap;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>數名其妙 v3</h1>
+  <p class="sub">產前取名模式 — 開發・驗證・review 的唯一判準</p>
+  <span class="frozen">2026-08-11 使用者確認凍結</span>
+</header>
+
+<section>
+  <h2>背景</h2>
+  <p class="note" style="font-size:.9375rem;color:var(--ink)">
+  本站主要使用者是<strong>替未出生小孩取名的人</strong>：姓氏固定、產前先用三才五格的
+  筆畫組合快速安排名字、以預產期算生肖喜忌選字；<strong>八字（時辰）分析留到出生後</strong>。</p>
+</section>
+
+<section>
+  <h2>定位</h2>
+  <ol>
+    <li value="1"><strong>雙模式並存</strong>：首頁分「我要取名」／「分析名字」兩入口，互不干擾；v2 八字掛在分析側。既有分析功能不因取名模式改動行為。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>輸入</h2>
+  <ol>
+    <li value="2">取名模式收：<strong>姓氏</strong>（複姓支援，沿用 v1 五格規則）＋<strong>預產期</strong>（西元年月日）。不收時辰。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>筆畫組合</h2>
+  <ol>
+    <li value="3">依姓氏列出「<strong>三才吉＋五格數理皆吉</strong>」的筆畫組合；每組攤開分項判定（三才、五格各自吉凶），<strong>不排序、不給分</strong>——守住「不合成單一總分」原則。</li>
+    <li value="4"><strong>預設雙名，可切換單名</strong>。</li>
+    <li value="5">組合只列「每個位置在候選字池內至少有一個可用字」者；某姓氏無全吉解時，退而列「三才吉＋五格至多一格平（無凶）」的次佳組合，並<strong>明示已放寬的條件</strong>。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>候選字</h2>
+  <ol>
+    <li value="6">點入筆畫組合展開該筆畫的候選字清單，字池採 v2 既有的 <strong>Big5 Level 1 常用字表</strong>（5,402 字）。</li>
+    <li value="7">生肖喜忌<strong>標註不刪</strong>：預設只顯示喜＋中性字，忌字一鍵展開並附忌的理由（字根與出處）。</li>
+    <li value="8">每字附<strong>逐字五行屬性</strong>作參考資訊；無時辰故不做用神匹配，畫面明說「五行喜忌分析留待出生後」。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>生肖與預產期</h2>
+  <ol>
+    <li value="9">生肖依預產期以<strong>立春</strong>換算（沿用 v1 引擎）。預產期落在立春<strong>前後 ±3 週</strong>時，明示警告並<strong>並列兩生肖</strong>的喜忌對照；忌字提示取兩肖聯集。</li>
+  </ol>
+  <div class="callout"><strong>為什麼 ±3 週：</strong>預產期本質不準，實際生產常見提前或延後；臨界期不擅自選邊，據實並列。</div>
+</section>
+
+<section>
+  <h2>出生後銜接</h2>
+  <ol>
+    <li value="10">候選名單可<strong>收藏於 localStorage</strong>（純前端、不上傳）；出生後補填時辰，可對每組候選名一鍵帶入完整分析（v1 五格＋生肖＋v2 八字）。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>沿用原則（v1/v2 全數繼承）</h2>
+  <ol>
+    <li value="11">不合成單一總分；每條規則出處寫進資料檔 <code>source</code> 欄位並於「資料來源」呈現；流派衝突不擅自調和；引擎純函式；罕字與範圍外據實回報不猜；GPLv2。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Grill 決策紀錄</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>決策點</th><th>裁決</th><th>未採用的選項</th></tr></thead>
+    <tbody>
+      <tr><td>產品定位</td><td>雙模式並存</td><td>取名為主分析為輔；只加區塊不動 UI</td></tr>
+      <tr><td>輸出形態</td><td>筆畫組合＋候選字</td><td>直接生成完整名字；只列筆畫組合</td></tr>
+      <tr><td>最優判準</td><td>只列全吉、不排序不給分</td><td>分級列出；綜合排序</td></tr>
+      <tr><td>字數</td><td>預設雙名可切單名</td><td>只做雙名；單雙混列</td></tr>
+      <tr><td>喜忌用法</td><td>標註不刪、預設隱藏忌字</td><td>直接過濾；全列只標註</td></tr>
+      <tr><td>預產期近立春</td><td>±3 週並列兩生肖</td><td>只提醒不並列；照填算不處理</td></tr>
+      <tr><td>出生後銜接</td><td>localStorage 存候選名單</td><td>不存手動重輸；匯出／分享連結</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<p class="note" style="text-align:center">本檔由 SPEC-v3.md 轉製，內容以 SPEC-v3.md 為準。</p>
+</div>
+</body>
+</html>
