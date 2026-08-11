@@ -352,3 +352,189 @@ describe('UI', () => {
     expect(text).toContain('1945');
   });
 });
+
+// --- v3：取名模式 ------------------------------------------------------------
+
+function submitNaming(fields: Record<string, string>): string {
+  for (const [id, value] of Object.entries(fields)) set(id, value);
+  const form = document.getElementById('naming-form') as HTMLFormElement;
+  form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+  return (document.getElementById('naming-result') as HTMLElement).textContent ?? '';
+}
+
+const NAMING_BASE = {
+  'naming-surname': '陳',
+  'naming-year': '2027',
+  'naming-month': '6',
+  'naming-day': '1',
+};
+
+/** 展開第 index 個筆畫組合並回傳其 details 元素（候選字為展開時才渲染）。 */
+function openCombo(index = 0): HTMLDetailsElement {
+  const combo = document.querySelectorAll<HTMLDetailsElement>('details.combo')[index]!;
+  combo.open = true;
+  combo.dispatchEvent(new Event('toggle'));
+  return combo;
+}
+
+describe('UI（取名模式，SPEC-v3）', () => {
+  beforeEach(async () => {
+    localStorage.clear();
+    await mount();
+  });
+
+  it('預設顯示取名入口，分析入口藏起；點分頁可切換（SPEC-v3 #1）', () => {
+    expect((document.getElementById('mode-naming') as HTMLElement).hidden).toBe(false);
+    expect((document.getElementById('mode-analysis') as HTMLElement).hidden).toBe(true);
+    const analysisTab = document.querySelector<HTMLButtonElement>('[data-mode="analysis"]')!;
+    analysisTab.click();
+    expect((document.getElementById('mode-naming') as HTMLElement).hidden).toBe(true);
+    expect((document.getElementById('mode-analysis') as HTMLElement).hidden).toBe(false);
+    expect(analysisTab.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('列組合：分項判定、不排序不給分、天格標明先天定不計（SPEC-v3 #3）', () => {
+    const text = submitNaming(NAMING_BASE);
+    expect(text).toContain('陳 姓（16 畫）的吉筆畫組合');
+    expect(text).toContain('不合成單一總分');
+    expect(text).toContain('不計吉凶、只參與三才');
+    expect(document.querySelectorAll('details.combo').length).toBeGreaterThan(0);
+    // 每個 summary 都有三才與四個計分格的分項標籤。
+    const summary = document.querySelector('details.combo summary')!;
+    expect(summary.textContent).toContain('三才');
+    expect(summary.querySelectorAll('.tag')).toHaveLength(5); // 三才 + 人地外總
+  });
+
+  it('展開組合：天格列出但標「先天定・不計」，候選字預設無忌字（SPEC-v3 #7）', () => {
+    submitNaming(NAMING_BASE);
+    const combo = openCombo();
+    expect(combo.textContent).toContain('先天定・不計');
+    // 預設可見的 chips 不含忌字；忌字收在 cand-avoid 的 details 裡。
+    const visibleChips = combo.querySelectorAll('.cand-pos > .chips .chip.tag--bad');
+    expect(visibleChips).toHaveLength(0);
+    const avoid = combo.querySelector('details.cand-avoid');
+    expect(avoid).not.toBeNull();
+    expect(avoid!.querySelector('summary')!.textContent).toContain('忌字');
+    expect(avoid!.querySelectorAll('.chip').length).toBeGreaterThan(0);
+    // 忌字附理由（SPEC-v3 #7）。
+    expect(avoid!.textContent).toContain('忌用');
+  });
+
+  it('預產期距立春 3 週內：並列兩生肖、忌字取聯集（SPEC-v3 #9）', () => {
+    const text = submitNaming({
+      ...NAMING_BASE,
+      'naming-year': '2027',
+      'naming-month': '2',
+      'naming-day': '10',
+    });
+    expect(text).toContain('距立春 6 天');
+    expect(text).toContain('馬');
+    expect(text).toContain('羊');
+    expect(text).toContain('忌字取聯集');
+    expect(text).toContain('馬喜');
+    expect(text).toContain('羊忌');
+  });
+
+  it('距立春遠：單一生肖，不出臨界警告', () => {
+    const text = submitNaming(NAMING_BASE);
+    expect(text).toContain('未羊');
+    expect(text).not.toContain('忌字取聯集');
+  });
+
+  it('點滿各位置的字才能收藏；收藏進 localStorage 且重載後仍在（SPEC-v3 #10）', async () => {
+    submitNaming(NAMING_BASE);
+    const combo = openCombo();
+    const save = combo.querySelector<HTMLButtonElement>('[data-action="save-fav"]')!;
+    expect(save.disabled).toBe(true);
+
+    const pick = (pos: number) =>
+      combo.querySelector<HTMLButtonElement>(`.chip[data-pos="${pos}"]`)!;
+    pick(0).click();
+    expect(save.disabled).toBe(true); // 還差一個位置
+    pick(1).click();
+    expect(save.disabled).toBe(false);
+    const expected = '陳' + pick(0).dataset['char']! + pick(1).dataset['char']!;
+    save.click();
+
+    const stored = JSON.parse(localStorage.getItem('mio-shuming:favorites:v1')!) as {
+      surname: string;
+      givenName: string;
+    }[];
+    expect(stored).toHaveLength(1);
+    expect(stored[0]!.surname + stored[0]!.givenName).toBe(expected);
+    expect(document.getElementById('naming-favorites')!.textContent).toContain(expected);
+
+    // 重新載入頁面（模擬幾個月後回來）：收藏仍在。
+    await mount();
+    expect(document.getElementById('naming-favorites')!.textContent).toContain(expected);
+  });
+
+  it('「帶入完整分析」切到分析模式並填入姓名（SPEC-v3 #10）', () => {
+    localStorage.setItem(
+      'mio-shuming:favorites:v1',
+      JSON.stringify([{ surname: '陳', givenName: '宇軒' }]),
+    );
+    // 收藏區在 init 時渲染，重新觸發：直接重掛。
+    return mount().then(() => {
+      const button = document.querySelector<HTMLButtonElement>('[data-action="fav-analyse"]')!;
+      button.click();
+      expect((document.getElementById('mode-analysis') as HTMLElement).hidden).toBe(false);
+      expect((document.getElementById('surname') as HTMLInputElement).value).toBe('陳');
+      expect((document.getElementById('givenName') as HTMLInputElement).value).toBe('宇軒');
+    });
+  });
+
+  it('查無此字的姓氏誠實回報', () => {
+    const text = submitNaming({ ...NAMING_BASE, 'naming-surname': '𡈙' });
+    expect(text).toContain('查無此字');
+  });
+
+  it('單名模式：組合為單一位置，外格標「單名固定・不計」', () => {
+    const radio = document.querySelector<HTMLInputElement>('input[name="givenLength"][value="1"]')!;
+    radio.checked = true;
+    submitNaming({ ...NAMING_BASE, 'naming-surname': '王' });
+    const combo = openCombo();
+    expect(combo.querySelectorAll('.compose__slot')).toHaveLength(1);
+    expect(combo.textContent).not.toContain('名二');
+    expect(combo.textContent).toContain('單名固定・不計');
+  });
+
+  it('連次佳都無解時照實回報並建議改雙名（陳＋單名）', () => {
+    const radio = document.querySelector<HTMLInputElement>('input[name="givenLength"][value="1"]')!;
+    radio.checked = true;
+    const text = submitNaming(NAMING_BASE); // 陳（16 畫）單名無任何三才吉的無凶組合
+    expect(document.querySelectorAll('details.combo')).toHaveLength(0);
+    expect(text).toContain('次佳組合也不存在');
+    expect(text).toContain('建議改用雙名');
+  });
+
+  it('取名結果也附資料來源，含天格不計的出處', () => {
+    const text = submitNaming(NAMING_BASE);
+    expect(text).toContain('資料來源');
+    expect(text).toContain('天格不計吉凶');
+  });
+});
+
+describe('UI（Codex review 回修的回歸）', () => {
+  beforeEach(async () => {
+    localStorage.clear();
+    await mount();
+  });
+
+  it('分析模式的資料來源不列取名模式專屬的天格／單名外格條目', () => {
+    const text = submit(BASE);
+    expect(text).toContain('資料來源');
+    expect(text).not.toContain('天格不計吉凶');
+    expect(text).not.toContain('單名外格不計吉凶');
+  });
+
+  it('曆上不存在的預產期（2027-02-30）誠實回報，不進位不猜', () => {
+    const text = submitNaming({
+      ...NAMING_BASE,
+      'naming-month': '2',
+      'naming-day': '30',
+    });
+    expect(text).toContain('有效西元日期');
+    expect(document.querySelectorAll('details.combo')).toHaveLength(0);
+  });
+});

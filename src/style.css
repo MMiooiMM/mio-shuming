@@ -642,3 +642,170 @@ select:focus-visible {
   font-size: 1.25rem;
   line-height: 1.6;
 }
+
+/* --- v3：取名模式 ---------------------------------------------------------- */
+
+.modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.1rem;
+}
+
+.mode-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.7rem 0.5rem;
+  font-size: 1rem;
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.mode-tab small {
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+}
+
+.mode-tab[aria-pressed='true'] {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.mode-tab[aria-pressed='true'] small {
+  color: #fff;
+  opacity: 0.85;
+}
+
+.mode-tab:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.form__row--radio {
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+}
+
+/* 筆畫組合的摺疊列 */
+.combo {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.combo > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.6rem 0.7rem;
+  cursor: pointer;
+}
+
+.combo > summary::-webkit-details-marker {
+  display: none;
+}
+
+.combo__strokes {
+  font-weight: 600;
+  margin-right: auto;
+}
+
+.combo__body {
+  padding: 0.6rem 0.7rem 0.8rem;
+  border-top: 1px solid var(--line);
+}
+
+/* 候選字 chips */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.4rem 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  padding: 0.25rem 0.45rem;
+  font-size: 1.15rem;
+  font-family: inherit;
+  line-height: 1.4;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.chip small {
+  font-size: 0.65rem;
+  opacity: 0.75;
+}
+
+.chip--on {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.cand-avoid > summary {
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+  padding: 0.3rem 0;
+}
+
+/* 目前搭配與收藏 */
+.compose {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.6rem 0 0;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--line);
+}
+
+.compose b {
+  font-size: 1.3rem;
+}
+
+.compose__slot {
+  color: var(--ink-soft);
+}
+
+.favorites {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.favorite {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.favorite__name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-right: auto;
+}

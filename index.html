@@ -19,6 +19,70 @@
         </p>
       </header>
 
+      <nav class="modes" aria-label="模式切換">
+        <button type="button" class="mode-tab" data-mode="naming" aria-pressed="true">
+          我要取名<small>還沒出生，先安排名字</small>
+        </button>
+        <button type="button" class="mode-tab" data-mode="analysis" aria-pressed="false">
+          分析名字<small>已有名字，做完整分析</small>
+        </button>
+      </nav>
+
+      <section id="mode-naming">
+        <form id="naming-form" class="card form" novalidate>
+          <!-- 姓氏欄同樣不設 maxlength：理由見下方分析表單的註解（UTF-16 截斷）。 -->
+          <div class="form__row">
+            <label class="field">
+              <span class="field__label">姓</span>
+              <input
+                id="naming-surname"
+                name="surname"
+                type="text"
+                inputmode="text"
+                autocomplete="off"
+                placeholder="王"
+                required
+              />
+              <span class="field__hint">單姓 1 字，複姓 2 字</span>
+            </label>
+            <fieldset class="field">
+              <legend class="field__label">名字字數</legend>
+              <div class="form__row form__row--radio">
+                <label class="field--check">
+                  <input type="radio" name="givenLength" value="2" checked />
+                  <span>雙名（2 字）</span>
+                </label>
+                <label class="field--check">
+                  <input type="radio" name="givenLength" value="1" />
+                  <span>單名（1 字）</span>
+                </label>
+              </div>
+            </fieldset>
+          </div>
+
+          <fieldset class="field field--date">
+            <legend class="field__label">預產期（西元年月日）</legend>
+            <div class="form__row form__row--date">
+              <label class="sr-only" for="naming-year">年</label>
+              <input id="naming-year" name="year" type="number" inputmode="numeric" placeholder="2026" min="1900" max="2100" required />
+              <label class="sr-only" for="naming-month">月</label>
+              <input id="naming-month" name="month" type="number" inputmode="numeric" placeholder="1" min="1" max="12" required />
+              <label class="sr-only" for="naming-day">日</label>
+              <input id="naming-day" name="day" type="number" inputmode="numeric" placeholder="20" min="1" max="31" required />
+            </div>
+            <span class="field__hint">
+              生肖依<strong>立春</strong>分界換算；預產期距立春 3 週內會並列兩個生肖，不擅自選邊
+            </span>
+          </fieldset>
+
+          <button type="submit" class="button">列出吉筆畫組合</button>
+        </form>
+
+        <div id="naming-result" class="result" aria-live="polite"></div>
+        <div id="naming-favorites"></div>
+      </section>
+
+      <section id="mode-analysis" hidden>
       <form id="form" class="card form" novalidate>
         <!--
           These fields deliberately carry no maxlength: the attribute counts
@@ -134,6 +198,7 @@
       </form>
 
       <div id="result" class="result" aria-live="polite"></div>
+      </section>
 
       <footer class="page__footer">
         <p>
