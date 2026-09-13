@@ -242,7 +242,9 @@
 - notes: Deviation（實文與 brief 衝突）：`SummaryTone.neutral` 實際同時涵蓋 半吉、喜忌並見、中性、用神；照 brief 只把 neutral 改灰會讓半吉／喜忌並見變灰（第一版截圖卡片三才「半吉」變灰，已抓到）→ 新增 tone `mid`（summary.ts、compare.ts），`TONE_CLASS.mid=tag--mid`、`CARD_TONE.mid`=黃。預設決策：①#23 未列的按鈕「改以…重算」（夏令、早子時）與「恢復本站判定」→ 次要；②#25 黃色只留半吉／喜忌並見 → 身強／身弱（原 bad／mid）改灰、姓名匹配「五行不明」（原 mid）改 tag--unknown、時間校正「合計」（原 tag--flat）改灰，`.tag--flat` 已無用途刪除；③比較視圖「生肖未知」改灰色標籤、「無預產期，不判」tag--unknown→tag--neutral；④深色 `--neutral #bdb5ab`／`--neutral-soft #2e2a26`；⑤`.chip--on` 字色用 `var(--surface)`（深色模式才不會淺字配淺底）；⑥用神覆寫鈕加 `.button--toggle`，選中 accent-soft 底＋accent 字＋accent 框。測試雷：Chromium getComputedStyle 把 1.5px 框線取整成 1px（DPR 1／2／3 實測皆 1px），且簡寫含 var() 時 CSSOM 長寫屬性為空 → E2E 改讀樣式表宣告值（cssText）；vitest 會把 CSS `?raw` import 清成空字串，draw.test.ts 改驗字面色值，網頁端由 E2E computed 驗同值。**CONSULT 問題**：SPEC #25「改用灰色：…用神五行標籤」——讀法 A（已實作）＝摘要區「用神 木、金、水」標籤（外部評審指的琥珀色那顆）；讀法 B（Codex）＝連用神詳情區「喜用」五行（現綠）也改灰，若 B 則「忌神」（現紅）是否一併改灰。WIP 留在工作樹（8 追蹤檔＋2 新檔），備份 `scratchpad/B11-wip/B11-tracked.patch`。
 
 
-  - **主 agent CONSULT 裁決（2026-09-13）：採解讀 A。** #25「用神五行標籤」指摘要與圖卡上那顆「用神 木、金、水」琥珀色 tag（SPEC 起草依據是 mirror 自評第 1 點與評審 ⑤）。用神詳細區塊的「喜用」綠（main.ts:214）與「忌神」紅（main.ts:215）表達的是有利／不利五行，屬正當語意，**維持不變**。Codex 的 REQUEST_CHANGES 依此裁決視為已處理：重跑 review 時把本裁決放進 prompt。另認可 deviations 1–5（新增 mid tone 保住半吉黃色、未列按鈕預設次要、身強身弱改中性、五行不明改 unknown、1.5px 以 cssText 驗）。WIP 留在工作樹（備份於 scratchpad/B11-wip/），續跑者直接在原地接手，不需要乾淨工作樹。## B12. 拿掉畫面上的開發者用語＋守衛
+  - **主 agent CONSULT 裁決（2026-09-13）：採解讀 A。** #25「用神五行標籤」指摘要與圖卡上那顆「用神 木、金、水」琥珀色 tag（SPEC 起草依據是 mirror 自評第 1 點與評審 ⑤）。用神詳細區塊的「喜用」綠（main.ts:214）與「忌神」紅（main.ts:215）表達的是有利／不利五行，屬正當語意，**維持不變**。Codex 的 REQUEST_CHANGES 依此裁決視為已處理：重跑 review 時把本裁決放進 prompt。另認可 deviations 1–5（新增 mid tone 保住半吉黃色、未列按鈕預設次要、身強身弱改中性、五行不明改 unknown、1.5px 以 cssText 驗）。WIP 留在工作樹（備份於 scratchpad/B11-wip/），續跑者直接在原地接手，不需要乾淨工作樹。
+
+## B12. 拿掉畫面上的開發者用語＋守衛
 - status: TODO
 - model: sonnet
 - depends: B11
