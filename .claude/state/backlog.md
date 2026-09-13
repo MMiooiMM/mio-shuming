@@ -77,7 +77,7 @@
 - notes: istj 依據：ogp.me 明定必要屬性為 og:title/og:type/og:image/og:url（spec 本身未強制 og:image 用絕對網址，但其自身範例一律用絕對網址）；developers.facebook.com/docs/sharing/webmasters/images 建議 1200×630（1.91:1）、最小 200×200、上限 8MB。決策：og:url／og:image 寫死絕對網址（GitHub Pages 網域），因為爬蟲離開瀏覽器情境抓取 HTML，相對網址在該情境下的解析行為沒有規範保證；icon（favicon/apple-touch-icon）維持相對路徑（`./...`），沿用既有 `base:'./'` 慣例，交給瀏覽器自己解析。OG／icon 圖用 `tools/gen-og-image.mjs`（Playwright headless 截圖既有 devDependency `@playwright/test`，非新增 runtime 依賴）產生，可重製；favicon.svg 手刻，尺寸小不需要腳本。**待使用者實測**：LINE／FB 分享預覽除錯工具需要登入帳號抓取截圖，本 session 無法代做；其餘部分（meta 標籤、圖檔、CI 部署、200 curl）已完整驗證並 DONE，不算 BLOCKED。
 
 ## B3. 分項標籤函式＋結果摘要區
-- status: TODO
+- status: DONE(dc0ec2d)
 - model: opus
 - depends: B0
 - spec: SPEC-v4 #8、#2（標籤內容）、#6
@@ -93,8 +93,8 @@
 - verify:
   - before：結果頁頂端無摘要（截圖）；after：摘要標籤與下方各分項判定一致——Playwright 抽 3 個標籤與對應 section 的判定文字比對。
   - 變異測試：故意把某標籤 verdict 寫錯，確認 vitest 會紅。
-- evidence:
-- notes:
+- evidence: before（王小明 1998-06-10 10:00 臺北市）結果區第一個 section＝「時間校正」、`.summary` 0 個；after＝「摘要」、1 個（390/1280 皆同，截圖在 scratchpad `B3-before-*`／`B3-after2-summary-*`）。vitest 271 → 278 passed（summary.test.ts 7 項）。變異測試 3 次皆紅：五格 verdict 寫死「吉」、字根 verdict 寫死「喜」、立春未定只列主生肖 → 各 1 failed；還原 7 passed。Playwright 8 → 12 passed（`e2e/summary.spec.ts`：三才／人格「數值 吉凶」／生肖字根「明」／八字匹配「小」與下方區塊比對一致；未填時辰無八字標籤）；390px 分析結果 scrollWidth 390 = clientWidth 390。`npm run build` exit 0。Codex review round 1 REQUEST_CHANGES → 修 → round 2 APPROVE。
+- notes: API：`summaryTags(a: Analysis, bazi?: { yongShen: Pick<YongShenResult,'favor'>; match: Pick<MatchResult,'chars'> })`（`src/engine/summary.ts`）；B5 卡片請直接重用，四柱干支不在標籤內，另從 `BaziChart` 取。標籤內容：三才 `sancai.luck`；五格五格全列，verdict `"${value} ${luck}"`；生肖為名字所有字（含姓，與結果區一致）；八字＝用神（喜用五行以「、」連接，空集合時「喜用為空」）＋逐字 `MatchVerdict`（不附五行，區塊標籤的「・五行」E2E 取「・」前比對）。**Deviation（Codex review 抓到，已修）**：立春未定時 brief 只寫「另出生肖未定標籤」，但字根喜忌若只依主生肖列會變成替使用者選邊（例：1985-02-04「王」對牛忌、對鼠喜），違反 #6——改為兩個生肖各列一次，label 標成「王（牛）」「王（鼠）」，用引擎的純函式 `judgeChars`。**Deviation（配色）**：tone 只有四值，`半吉`／`喜忌並見`／`中性`／用神 皆 neutral → `tag--mid`；unknown（生肖未定、五行不明、喜用為空）→ 新增 `tag--unknown`（細框無底色）。原因：`tag--flat` 的 `--accent #8c2f1f` 與 `--bad #9c2b2b` 幾乎同色，截圖上半吉會被讀成凶；代價是「中性」在摘要為琥珀色、在姓名匹配區仍為 `tag--flat`，交給 B10 mirror 整體判斷。E2E 選擇器雷：生肖字根標題是「生肖字根　午馬」，精確比對會 timeout，要用前綴 RegExp。本項無外部規格需 istj（純內部引擎輸出重組）。
 
 ## B4. 名詞就地解釋
 - status: TODO
