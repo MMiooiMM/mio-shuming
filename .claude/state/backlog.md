@@ -166,7 +166,7 @@
 - notes: istj：重用 B5 已引用的 W3C Web Share／MDN（share 需 transient activation → 按鈕點擊中直接呼叫 `shareOrDownload`；AbortError 靜默），本項無新外部規格。API：`compareEntry(fav)`（`src/engine/compare.ts`，比較視圖與卡片唯一標籤來源，輸出不含 due）、`compareCardLayout(entries)`／`compareCardText`（`src/card/compare-layout.ts`）、`drawCompareCard(layout)`（`src/card/draw.ts`）。決策：①生肖字根標籤含姓（與 B3 摘要一致）；立春窗內依兩肖各列並標「字（生肖）」；無 due 或曆上不存在的 due → 「生肖未知」且不判字根。②比較視圖用 `<table>`（列＝項目、欄＝名字，列對齊好比較），包在 `.compare__scroll`（role=region、tabindex=0）內橫捲，列標題 sticky；單名外格列顯示「單名固定・不計」。③欄位順序照收藏清單，不依勾選先後或吉凶。④勾選只在記憶體；勾選變動或收藏增刪即關閉比較視圖，避免畫面與勾選不一致。⑤比較卡寬 1080、高 1350–2700 依內容加高，超過上限才縮字級（首版先封頂再縮，底部留大片空白，看圖發現後改成縮完再依內容定高）。⑥卡片檔名 `mio-shuming-compare.png`。⑦`TONE_CLASS` 從 main.ts 移到 ui-shared.ts 共用；draw.ts 抽出 groupsPass／paintFrame／paintFooter，B5 card.spec 6 項仍過。Deviation：brief 的「勾 6 個被擋」實作為滿 5 個時其餘勾選框 disabled（另有 change handler 保險擋第 6 個）。環境：B6 留下的 gitignored `tools/raw/b6-test.ts` 讓 `tsc` 失敗（已知雷），已移到 scratchpad `B7-env/`，未刪除。
 
 ## B8. Lighthouse 無障礙 ≥ 95
-- status: TODO
+- status: DONE(dac5602)
 - model: sonnet
 - depends: B1、B2、B4、B5、B7
 - spec: SPEC-v4 #19
@@ -176,8 +176,8 @@
   - 修到三者皆 ≥ 95（常見：對比度、按鈕名稱、表單 label、heading 階層、`aria-pressed` 用法）。
   - 量測腳本入庫（`tools/lighthouse-a11y.mjs` 或 e2e 內），可重跑；**不進 CI 閘門**（SPEC 只要求附報告數字）。
 - verify: before → after 三狀態分數表；`npm test`、`test:e2e` 綠。
-- evidence:
-- notes:
+- evidence: 三態 accessibility 分數（跑兩次一致）：首頁 95、取名結果（候選字展開）96、分析結果（含時辰）96，皆 ≥95，無需修對比度／label 等缺失。`npm test` 314 passed；`npm run test:e2e` 42 passed（mobile+desktop）；`npm run build` 過。Codex CLI review VERDICT APPROVE。
+- notes: istj 依據：Lighthouse user-flows 官方文件（github.com/GoogleChrome/lighthouse/blob/main/docs/user-flows.md）——SPA 狀態互動後用 `flow.snapshot()` 稽核「當下 DOM」，不觸發導覽；自訂 `config` 需 `extends: 'lighthouse:default'` 否則報 `No artifacts were defined on the config`（踩過的坑，寫進腳本註解）。量測工具：`tools/lighthouse-a11y.mjs`（puppeteer 驅動、`onlyCategories:['accessibility']`），三態各自一次 navigate/timespan/snapshot，第三態（分析結果）用獨立分頁＋獨立 flow 避免跟取名狀態互相污染。Deviation：無，三態一次到位皆 ≥95，scope 預期的「常見缺失修復」步驟未觸發（B1–B7 先前已把無障礙基礎打好）。腳本非阻斷建議（Codex）已採納：`browser.close()` 包進 `try/finally`。不進 CI 閘門，依 SPEC 只需附報告數字。
 
 ## B9. 文件同步
 - status: TODO
