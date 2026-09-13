@@ -16,12 +16,31 @@ import { esc, handleTermToggle, luckClass, sourcesSection, termParts, verdictCla
 
 // --- 收藏（SPEC-v3 #10）：localStorage、純前端、不上傳 -------------------------
 
+export interface FavoriteDue {
+  year: number;
+  month: number;
+  day: number;
+}
+
 export interface Favorite {
   surname: string;
   givenName: string;
+  /** 新收藏時存入取名表單當下的預產期；SPEC-v4 #11，可選以相容舊 v1 資料。 */
+  due?: FavoriteDue;
 }
 
+// 沿用 v1 key：`due` 是新增的可選欄位，舊資料（沒有 due）天然相容，不需要遷移。
 const FAV_KEY = 'mio-shuming:favorites:v1';
+
+function isValidDue(d: unknown): d is FavoriteDue {
+  return (
+    typeof d === 'object' &&
+    d !== null &&
+    Number.isFinite((d as FavoriteDue).year) &&
+    Number.isFinite((d as FavoriteDue).month) &&
+    Number.isFinite((d as FavoriteDue).day)
+  );
+}
 
 export function loadFavorites(storage: Storage = localStorage): Favorite[] {
   try {
@@ -29,13 +48,16 @@ export function loadFavorites(storage: Storage = localStorage): Favorite[] {
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (f): f is Favorite =>
-        typeof f === 'object' &&
-        f !== null &&
-        typeof (f as Favorite).surname === 'string' &&
-        typeof (f as Favorite).givenName === 'string',
-    );
+    return parsed
+      .filter(
+        (f): f is Favorite =>
+          typeof f === 'object' &&
+          f !== null &&
+          typeof (f as Favorite).surname === 'string' &&
+          typeof (f as Favorite).givenName === 'string',
+      )
+      // 壞掉的 due 當作不存在——不丟整筆收藏。
+      .map((f) => (isValidDue(f.due) ? f : { surname: f.surname, givenName: f.givenName }));
   } catch {
     // 壞掉的儲存內容不擋功能——當成沒有收藏，下次儲存時覆寫。
     return [];
@@ -270,6 +292,7 @@ interface CurrentRun {
   result: NamingCombos;
   zodiac: DueZodiac;
   dueText: string;
+  due: FavoriteDue;
 }
 
 let current: CurrentRun | undefined;
@@ -332,7 +355,7 @@ export function initNaming(opts: NamingUiOptions): void {
     }
 
     selections.clear();
-    current = { result, zodiac, dueText: `${year}-${month}-${day}` };
+    current = { result, zodiac, dueText: `${year}-${month}-${day}`, due: { year, month, day } };
     const combosHtml = result.combos.length
       ? `<section class="card">
           <h2 class="section__title">
@@ -424,11 +447,29 @@ export function initNaming(opts: NamingUiOptions): void {
       const key = save.dataset['key']!;
       const picked = selections.get(key);
       if (!picked || picked.some((c) => c === undefined)) return;
-      const favorite: Favorite = { surname: current.result.surname, givenName: picked.join('') };
+      const favorite: Favorite = {
+        surname: current.result.surname,
+        givenName: picked.join(''),
+        due: current.due,
+      };
       const favs = loadFavorites();
+      const existing = favs.findIndex(
+        (f) => f.surname === favorite.surname && f.givenName === favorite.givenName,
+      );
       let saved = true;
-      if (!favs.some((f) => f.surname === favorite.surname && f.givenName === favorite.givenName)) {
+      const dueEqual =
+        existing !== -1 &&
+        favs[existing]!.due !== undefined &&
+        favs[existing]!.due!.year === favorite.due!.year &&
+        favs[existing]!.due!.month === favorite.due!.month &&
+        favs[existing]!.due!.day === favorite.due!.day;
+      if (existing === -1) {
+        // 新名字：加一筆。
         favs.push(favorite);
+        saved = saveFavorites(favs);
+      } else if (!dueEqual) {
+        // 同姓名不同預產期：視為同一筆，更新預產期（SPEC-v4 #11 決策，見 backlog notes）。
+        favs[existing] = favorite;
         saved = saveFavorites(favs);
       }
       renderFavorites();
