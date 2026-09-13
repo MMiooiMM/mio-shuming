@@ -12,7 +12,20 @@ import {
   zodiacReasons,
 } from './engine/naming.ts';
 import type { DueZodiac, NamingCandidate, NamingCombos, StrokeCombo } from './engine/naming.ts';
-import { esc, handleTermToggle, luckClass, sourcesSection, termParts, verdictClass } from './ui-shared.ts';
+import { compareEntry } from './engine/compare.ts';
+import type { CompareEntry } from './engine/compare.ts';
+import { compareCardLayout } from './card/compare-layout.ts';
+import { canvasToPng, drawCompareCard } from './card/draw.ts';
+import { shareOrDownload } from './card/share.ts';
+import {
+  TONE_CLASS,
+  esc,
+  handleTermToggle,
+  luckClass,
+  sourcesSection,
+  termParts,
+  verdictClass,
+} from './ui-shared.ts';
 
 // --- 收藏（SPEC-v3 #10）：localStorage、純前端、不上傳 -------------------------
 
@@ -249,7 +262,15 @@ function comboBody(c: StrokeCombo, double: boolean, animals: Animal[]): string {
     </p>`;
 }
 
-function favoritesSection(favs: Favorite[]): string {
+// --- 收藏比較（SPEC-v4 #12、#13）--------------------------------------------
+
+export const COMPARE_MIN = 2;
+export const COMPARE_MAX = 5;
+
+/** 收藏的識別鍵：去重規則是同姓名視為同一筆（B6），所以姓名即鍵。 */
+export const favoriteKey = (f: Pick<Favorite, 'surname' | 'givenName'>) => `${f.surname}|${f.givenName}`;
+
+function favoritesSection(favs: Favorite[], selected: ReadonlySet<string>): string {
   if (!favs.length) return '';
   return `
     <section class="card" id="favorites-card">
@@ -261,7 +282,11 @@ function favoritesSection(favs: Favorite[]): string {
         ${favs
           .map(
             (f, i) => `<li class="favorite">
-              <span class="favorite__name">${esc(f.surname)}${esc(f.givenName)}</span>
+              <label class="favorite__pick">
+                <input type="checkbox" data-action="fav-compare-pick" data-key="${esc(favoriteKey(f))}"
+                  aria-label="比較 ${esc(f.surname)}${esc(f.givenName)}"${selected.has(favoriteKey(f)) ? ' checked' : ''}>
+                <span class="favorite__name">${esc(f.surname)}${esc(f.givenName)}</span>
+              </label>
               <button type="button" class="button button--inline" data-action="fav-analyse" data-i="${i}">
                 帶入完整分析
               </button>
@@ -272,9 +297,92 @@ function favoritesSection(favs: Favorite[]): string {
           )
           .join('')}
       </ul>
+      ${
+        favs.length >= COMPARE_MIN
+          ? `<div class="favorites__compare">
+              <button type="button" class="button button--inline" data-action="fav-compare" disabled>比較勾選的名字</button>
+              <span class="section__note" role="status" data-compare-hint></span>
+            </div>`
+          : ''
+      }
       <p class="section__note">
         出生後補上實際出生日期、時辰與出生地，即可對候選名跑五格＋生肖＋八字的完整分析。
       </p>
+    </section>`;
+}
+
+/** 比較表的列：三才、計分五格（依格序，任一名字有才列）、生肖、生肖字根。 */
+function compareSection(entries: CompareEntry[]): string {
+  const okEntries = entries.filter((e): e is Extract<CompareEntry, { ok: true }> => e.ok);
+  const gridNames = ['人格', '地格', '外格', '總格'].filter((n) =>
+    okEntries.some((e) => e.tags.some((t) => t.group === '五格' && t.label === n)),
+  );
+  const tagSpan = (verdict: string, tone: keyof typeof TONE_CLASS) =>
+    `<span class="tag ${TONE_CLASS[tone]}">${esc(verdict)}</span>`;
+  const cell = (e: CompareEntry, body: (ok: Extract<CompareEntry, { ok: true }>) => string) =>
+    `<td>${e.ok ? body(e) : '—'}</td>`;
+
+  const rows: string[] = [
+    `<tr><th scope="row">三才</th>${entries
+      .map((e) =>
+        e.ok
+          ? cell(e, (o) => o.tags.filter((t) => t.group === '三才').map((t) => tagSpan(t.verdict, t.tone)).join(''))
+          : `<td class="compare__error">${esc(e.reason)}</td>`,
+      )
+      .join('')}</tr>`,
+    ...gridNames.map(
+      (n) => `<tr><th scope="row">${esc(n)}</th>${entries
+        .map((e) =>
+          cell(e, (o) => {
+            const t = o.tags.find((x) => x.group === '五格' && x.label === n);
+            // 單名外格不含名字筆畫，取名改變不了——不計吉凶（SPEC-v3 #3）。
+            return t ? tagSpan(t.verdict, t.tone) : '<span class="tag tag--flat">單名固定・不計</span>';
+          }),
+        )
+        .join('')}</tr>`,
+    ),
+    `<tr><th scope="row">生肖</th>${entries.map((e) => cell(e, (o) => esc(o.zodiacText))).join('')}</tr>`,
+    `<tr><th scope="row">生肖喜忌</th>${entries
+      .map((e) =>
+        cell(e, (o) => {
+          const chars = o.tags.filter((t) => t.group === '生肖');
+          if (!chars.length) return '<span class="tag tag--unknown">無預產期，不判</span>';
+          return `<div class="compare__chars">${chars
+            .map(
+              (t) => `<span class="summary-tag"><span class="summary-tag__label">${esc(t.label)}</span>${tagSpan(
+                t.verdict,
+                t.tone,
+              )}</span>`,
+            )
+            .join('')}</div>`;
+        }),
+      )
+      .join('')}</tr>`,
+  ];
+
+  return `
+    <section class="card" id="compare-card">
+      <h2 class="section__title">
+        <span>候選名比較</span>
+        <span class="section__note">各名各項獨立判定，不計數、不加總、不排名</span>
+      </h2>
+      <p class="section__note">
+        只列取名可改變、計吉凶的格（天格由姓氏決定、單名外格固定，皆不計）。
+        生肖依收藏時的預產期換算，立春前後 ${LICHUN_WINDOW_DAYS} 天內兩肖並列；
+        沒有預產期的舊收藏顯示「生肖未知」，不猜。欄位順序同收藏清單，不是優劣排序。
+      </p>
+      <div class="compare__scroll" role="region" aria-label="候選名比較表" tabindex="0">
+        <table class="compare">
+          <thead>
+            <tr><td></td>${entries.map((e) => `<th scope="col">${esc(e.name)}</th>`).join('')}</tr>
+          </thead>
+          <tbody>${rows.join('')}</tbody>
+        </table>
+      </div>
+      <div class="summary__actions">
+        <button type="button" class="button button--inline" data-action="compare-card">輸出比較卡片</button>
+        <span class="section__note" role="status" data-compare-card-status></span>
+      </div>
     </section>`;
 }
 
@@ -328,10 +436,79 @@ export function initNaming(opts: NamingUiOptions): void {
     throw new Error('頁面缺少取名表單容器（#naming-form / #naming-result / #naming-favorites），無法啟動。');
   }
 
+  /** 勾選中的收藏（favoriteKey）。只在記憶體，不落地、不進網址（SPEC-v4 #7）。 */
+  const selected = new Set<string>();
+  /** 目前比較視圖對應的內容；勾選或收藏變動時清掉，避免畫面與勾選不一致。 */
+  let compared: CompareEntry[] | undefined;
+
+  const syncCompareControls = () => {
+    const count = selected.size;
+    const button = favEl.querySelector<HTMLButtonElement>('[data-action="fav-compare"]');
+    if (button) button.disabled = count < COMPARE_MIN || count > COMPARE_MAX;
+    const full = count >= COMPARE_MAX;
+    favEl.querySelectorAll<HTMLInputElement>('[data-action="fav-compare-pick"]').forEach((box) => {
+      box.disabled = full && !box.checked;
+      box.title = box.disabled ? `最多比較 ${COMPARE_MAX} 個` : '';
+    });
+    const hint = favEl.querySelector<HTMLElement>('[data-compare-hint]');
+    if (hint) {
+      hint.textContent = full
+        ? `已勾選 ${COMPARE_MAX} 個——最多比較 ${COMPARE_MAX} 個，想換名字請先取消勾選其他名字。`
+        : `勾選 ${COMPARE_MIN}–${COMPARE_MAX} 個名字並排比較（目前勾選 ${count} 個）。`;
+    }
+  };
+
   const renderFavorites = () => {
-    favEl.innerHTML = favoritesSection(loadFavorites());
+    const favs = loadFavorites();
+    const keys = new Set(favs.map(favoriteKey));
+    for (const k of [...selected]) if (!keys.has(k)) selected.delete(k);
+    compared = undefined;
+    favEl.innerHTML = favoritesSection(favs, selected);
+    syncCompareControls();
   };
   renderFavorites();
+
+  const closeCompare = () => {
+    compared = undefined;
+    favEl.querySelector('#compare-card')?.remove();
+  };
+
+  favEl.addEventListener('change', (event) => {
+    const box = event.target;
+    if (!(box instanceof HTMLInputElement) || box.dataset['action'] !== 'fav-compare-pick') return;
+    const key = box.dataset['key']!;
+    if (box.checked) {
+      if (selected.size >= COMPARE_MAX) {
+        // 保險：停用狀態被繞過時仍擋下第 6 個。
+        box.checked = false;
+      } else {
+        selected.add(key);
+      }
+    } else {
+      selected.delete(key);
+    }
+    closeCompare();
+    syncCompareControls();
+  });
+
+  const shareCompareCard = async (button: HTMLButtonElement) => {
+    const entries = compared;
+    if (!entries || button.disabled) return;
+    const status = button.parentElement?.querySelector<HTMLElement>('[data-compare-card-status]');
+    button.disabled = true;
+    try {
+      const blob = await canvasToPng(await drawCompareCard(compareCardLayout(entries)));
+      const file = new File([blob], 'mio-shuming-compare.png', { type: 'image/png' });
+      const outcome = await shareOrDownload(file, '數名其妙・候選名比較卡片');
+      if (status) {
+        status.textContent = outcome === 'downloaded' ? '此裝置不支援直接分享圖片，已改為下載 PNG。' : '';
+      }
+    } catch (err) {
+      if (status) status.textContent = err instanceof Error ? err.message : '卡片產生失敗。';
+    } finally {
+      button.disabled = false;
+    }
+  };
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -489,6 +666,24 @@ export function initNaming(opts: NamingUiOptions): void {
     if (!(target instanceof HTMLElement)) return;
     const button = target.closest<HTMLButtonElement>('[data-action]');
     if (!button) return;
+    const action = button.dataset['action'];
+    if (action === 'fav-compare-pick') return; // 勾選由 change 事件處理
+    if (action === 'compare-card') {
+      // 必須在點擊處理中直接呼叫：Web Share 需要 user activation（見 card/share.ts）。
+      void shareCompareCard(button);
+      return;
+    }
+    if (action === 'fav-compare') {
+      if (selected.size < COMPARE_MIN || selected.size > COMPARE_MAX) return;
+      // 欄位順序照收藏清單，不依勾選先後、更不依吉凶排序。
+      compared = loadFavorites()
+        .filter((f) => selected.has(favoriteKey(f)))
+        .map(compareEntry);
+      favEl.querySelector('#compare-card')?.remove();
+      favEl.insertAdjacentHTML('beforeend', compareSection(compared));
+      favEl.querySelector('#compare-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
     const favs = loadFavorites();
     const i = Number(button.dataset['i']);
     const favorite = favs[i];

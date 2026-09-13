@@ -1,12 +1,12 @@
 import './style.css';
 import { COUNTIES, DST_CAVEAT, STANDARD_MERIDIAN, countyOf } from './data/index.ts';
-import { esc, handleTermToggle, luckClass, sourcesSection, termParts, verdictClass } from './ui-shared.ts';
+import { TONE_CLASS, esc, handleTermToggle, luckClass, sourcesSection, termParts, verdictClass } from './ui-shared.ts';
 import { initNaming } from './naming-ui.ts';
 import { analyse } from './engine/index.ts';
 import { matchName } from './engine/match.ts';
 import type { MatchResult, MatchVerdict } from './engine/match.ts';
 import { summaryTags } from './engine/summary.ts';
-import type { SummaryBazi, SummaryGroup, SummaryTag, SummaryTone } from './engine/summary.ts';
+import type { SummaryBazi, SummaryGroup, SummaryTag } from './engine/summary.ts';
 import type { Analysis, CharVerdict, Element, Grid } from './engine/index.ts';
 import { baziChart } from './bazi/chart.ts';
 import type { BaziChart } from './bazi/chart.ts';
@@ -331,15 +331,6 @@ function matchSection(m: MatchResult, strokes: { min?: number; max?: number }): 
       }
     </section>`;
 }
-
-const TONE_CLASS: Record<SummaryTone, string> = {
-  good: 'tag--good',
-  bad: 'tag--bad',
-  // --accent（tag--flat）與 --bad 色相幾乎相同，半吉會被讀成凶，所以中間值用 tag--mid；
-  // 資料不足（未定、五行不明、喜用為空）用細框無底色的 tag--unknown，不借用任何吉凶色。
-  neutral: 'tag--mid',
-  unknown: 'tag--unknown',
-};
 
 /**
  * 結果摘要（SPEC-v4 #8）。**只呈現** `summaryTags()` 的輸出——卡片重用同一函式，

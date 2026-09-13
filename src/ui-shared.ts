@@ -15,6 +15,7 @@ import {
   ZODIAC_SOURCE,
 } from './data/index.ts';
 import type { CharVerdict, Luck } from './engine/index.ts';
+import type { SummaryTone } from './engine/summary.ts';
 
 export function esc(s: string): string {
   return s.replace(/[&<>"']/g, (c) =>
@@ -65,6 +66,16 @@ export function handleTermToggle(target: EventTarget | null): boolean {
   panel.hidden = !expand;
   return true;
 }
+
+/** 分項標籤（摘要、收藏比較）的語氣 → 樣式。 */
+export const TONE_CLASS: Record<SummaryTone, string> = {
+  good: 'tag--good',
+  bad: 'tag--bad',
+  // --accent（tag--flat）與 --bad 色相幾乎相同，半吉會被讀成凶，所以中間值用 tag--mid；
+  // 資料不足（未定、五行不明、喜用為空）用細框無底色的 tag--unknown，不借用任何吉凶色。
+  neutral: 'tag--mid',
+  unknown: 'tag--unknown',
+};
 
 export function luckClass(luck: Luck): string {
   return luck === '吉' ? 'tag--good' : luck === '半吉' ? 'tag--mid' : 'tag--bad';

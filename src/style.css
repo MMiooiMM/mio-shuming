@@ -927,3 +927,89 @@ select:focus-visible {
   font-weight: 600;
   margin-right: auto;
 }
+
+/* 收藏比較（SPEC-v4 #12）：勾選 2–5 個，並排比較；不計數、不排序。 */
+.favorite__pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: auto;
+  cursor: pointer;
+}
+
+.favorite__pick .favorite__name {
+  margin-right: 0;
+}
+
+.favorite__pick input {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.favorite__pick input:disabled {
+  cursor: not-allowed;
+}
+
+.favorite__pick input:disabled + .favorite__name {
+  color: var(--ink-soft);
+}
+
+.favorites__compare {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* 表格只在自己的容器內橫捲，整頁不溢位（SPEC-v4 #20）。 */
+.compare__scroll {
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+
+.compare__scroll:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.compare {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.875rem;
+}
+
+.compare th,
+.compare td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.compare thead th {
+  font-size: 1.05rem;
+  white-space: nowrap;
+}
+
+.compare tbody th {
+  position: sticky;
+  left: 0;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.compare td {
+  min-width: 7.5rem;
+}
+
+.compare__chars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.6rem;
+}
