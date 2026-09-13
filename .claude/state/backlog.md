@@ -246,7 +246,7 @@
   - 續跑者（2026-09-13）：未再改實作；採納 Codex 非阻擋建議，visual-tokens 的 radio／checkbox `accentColor` 斷言由「非 auto」收緊為「等於 LIGHT.accent」（8 passed）。
 
 ## B12. 拿掉畫面上的開發者用語＋守衛
-- status: TODO
+- status: DONE(d7e0098)
 - model: sonnet
 - depends: B11
 - spec: SPEC-v4 #28–#30
@@ -281,8 +281,8 @@
   - 變異測試：在 `naming-ui.ts` 放回「（SPEC-v3 #8）」，守衛要紅，然後還原。
   - `git diff src/data/` 審閱：「」內的引文沒有被動到（可用腳本抽出前後所有「…」片段比對是否相同，把結果貼進 evidence）。
   - `npm test`、`npm run test:e2e`、`npm run build` 全綠。
-- evidence:
-- notes:
+- evidence: before：守衛（e2e/no-dev-jargon.spec.ts）首跑 7/7 紅（首頁 localStorage、取名結果 SPEC-v3 #8、收藏 localStorage、分析有時辰 localStorage、無時辰 timeout（測試流程問題）、名詞展開 localStorage、頁尾 localStorage）。逐輪修正並被 Codex review 4 輪找出更多真實命中：SPEC-v3 #3／「已 curl 逐字比對確認」（numerology-81.json）、kTotalStrokes／kRSUnicode（kangxi-strokes.json，改生成腳本重跑）、tools/（components.json 的 variantTable，改生成腳本重跑）、SPEC-v2 #24（dst-taiwan.json 的 DST 邊界 caveat）、SPEC-v3 #5（naming.ts 的次佳組合 relaxedNote）。守衛最終涵蓋 12 個畫面狀態（首頁、取名結果＋忌字展開、次佳組合、無組合、立春臨界、收藏＋比較視圖、分析有時辰、夏令時間邊界不確定、手動覆寫用神、無時辰、名詞說明全展開、頁尾＋資料來源）× mobile/desktop＝24，全數 after 綠。變異測試 4 次（SPEC-v3 #8、SPEC-v2 #24、SPEC-v3 #5 各放回一次，另一次是最初 mutation round）皆使對應案例轉紅，還原後轉綠。`git diff src/data/numerology-81.json` 逐條核對 13 段「」引文前後逐字相同（Codex 亦重複核對過）。`npm test` 318 passed（不變）；`npm run test:e2e` 全量 74 passed；`npx vite build` 過。CI run 34743320389：build job npm test/test:e2e/build 綠，deploy 綠（首次因 e2e/favorites.spec.ts 既有測試在高並發下逾時 flaky，`gh run rerun --failed` 重跑後綠，非本項改動所致——該測試與檔案不在本項 diff 內）。Codex CLI review 4 輪：round1/2/3 REQUEST_CHANGES（分別指出 DST 邊界、比較視圖未真正開啟、忌字選擇器錯誤、次佳/無組合分支未覆蓋等）逐輪修正，round4 VERDICT: APPROVE。
+- notes: 已知命中點清單中的 `ganzhi.json`「已 curl 逐字比對」與 `yongshen.json` 的 SPEC 編號備註，經確認 `GANZHI_SOURCE`／相關 `yongshen.json` 欄位在目前 UI 沒有消費端（grep 全 repo 沒有任何 `.ts` 讀取並渲染這些欄位），不屬於 #28「畫面文字」違規，維持原樣（Codex round3 review 已認可此判斷）。Deviation：`src/main.ts:114`（index.html 註解裡的「SPEC #7」）是 HTML comment，不會進 `document.body.innerText`，不算違規，未改。CI 一次性 flaky（favorites.spec.ts 在 12-worker 高並發下逾時）與本項改動無關，`gh run rerun --failed` 後綠，未修改該測試邏輯。
 
 ## B13. 回歸檢查＋第二次 mirror（主 agent）
 - status: TODO
