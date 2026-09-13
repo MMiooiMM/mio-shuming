@@ -18,6 +18,7 @@ test-results/
 # Playwright MCP scratch output
 .playwright-mcp/
 *.png
+!public/**/*.png
 
 # Per-clone session state (handoff is short-lived, not shared)
 .claude/state/handoff-*.md
