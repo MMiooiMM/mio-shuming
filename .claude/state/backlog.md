@@ -192,11 +192,11 @@
 - notes: 逐條核對 B1–B8 backlog notes 中標記「Deviation」的段落（B1 截圖等效證據、B2 LINE/FB 待實測、B3 生肖字根分列與 tag--unknown 配色、B5 版面型別 vs 執行期守衛、B7 勾滿 5 個 disable）against SPEC-v4.md #1–21：均為 brief／內部實作層級落差，未牴觸 SPEC-v4 條文字面，故**未**加「修正」callout（與 SPEC-v3 #3 那種直接違反凍結文字的情況不同）。README 三處新增：功能簡介（分享卡片＋收藏比較）、`npm run test:e2e` 指令與實跑測試數（314／42，取代過期的「41 項」）、已知限制補 Web Share 退回下載與卡片隱私（不印時分／出生地／預產期）。Review：Codex CLI（`codex exec` 讀 `tools/raw/review-B9.md`）VERDICT: REQUEST_CHANGES，但 EVIDENCE 只指出 B2 的 LINE/FB 預覽待使用者登入實測——這是 B2 既有、已記錄、且 orchestration 規則明示可接受的 pendingUserVerification 狀態，不是本項 README diff 的缺陷，也不在 B9 scope 內（B9 無法代使用者登入 LINE/FB 除錯工具）；其餘 3 點證據（測試數字、分享/隱私敘述、其他 Deviation 免 callout 的判斷）皆 APPROVE，故未回頭修改，逕行採納。
 
 ## B10. 整體設計評審（主 agent）
-- status: TODO
+- status: DONE(docs/design-review/2026-09-13-external-ui-critique.md)
 - model: main
 - depends: B9
 - spec: SPEC-v4 #21；Contract rule 2a
 - scope: 走 `/mio-mirror`：390／1280 兩寬度下首頁、取名結果、比較視圖、分析結果（含摘要與名詞展開）、分析卡片 PNG、比較卡片 PNG、頁尾——只餵截圖給禁止讀程式的 opus sub-agent，與自評對照；需修的開新 backlog 項（B11+）。
 - verify: mirror 報告＋對照表；後續項目清單。
-- evidence:
-- notes:
+- evidence: 截圖 10 張（390/1280 × 首頁、取名結果、分析結果、比較＋兩張圖卡）；opus 只看截圖評審：competent 下緣；前三改善＝按鈕三級＋語意色歸位、結果優先＋降噪（含移除 UI 中 SPEC 編號／localStorage 等用語）、手機排版破損。自評對照已落檔。
+- notes: 後續 UI 修正待使用者裁決範圍後開 B11+。另：CI 自 B8（dac5602）起 npm ci 失敗，主 agent 以 7c39bf2 修復鎖檔，CI run 34737756989 build+deploy success；Lighthouse 抽驗 95/96/96 與 B8 一致。
