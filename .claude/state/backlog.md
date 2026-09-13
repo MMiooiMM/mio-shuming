@@ -285,7 +285,7 @@
 - notes: 已知命中點清單中的 `ganzhi.json`「已 curl 逐字比對」與 `yongshen.json` 的 SPEC 編號備註，經確認 `GANZHI_SOURCE`／相關 `yongshen.json` 欄位在目前 UI 沒有消費端（grep 全 repo 沒有任何 `.ts` 讀取並渲染這些欄位），不屬於 #28「畫面文字」違規，維持原樣（Codex round3 review 已認可此判斷）。Deviation：`src/main.ts:114`（index.html 註解裡的「SPEC #7」）是 HTML comment，不會進 `document.body.innerText`，不算違規，未改。CI 一次性 flaky（favorites.spec.ts 在 12-worker 高並發下逾時）與本項改動無關，`gh run rerun --failed` 後綠，未修改該測試邏輯。
 
 ## B13. 回歸檢查＋第二次 mirror（主 agent）
-- status: TODO
+- status: DONE(docs/design-review/2026-09-13-external-ui-critique-round2.md)
 - model: main
 - depends: B12
 - spec: SPEC-v4 #31
@@ -295,5 +295,5 @@
   - 再跑一次 `/mio-mirror`，評審 prompt 要標明哪些是改動前的舊圖。
   - 結論追加到 `docs/design-review/`。
 - verify: Lighthouse 數字、前後截圖、mirror 對照。
-- evidence:
-- notes:
+- evidence: Lighthouse 三態 95／96／96（與改動前相同）；npm test 318、test:e2e 74 全綠；CI run 34743624357 success。AFTER 截圖 docs/evidence/v4g-walkthrough/（本機）。第二輪 mirror：等級仍 competent（較接近 polished）；三件事皆「部分做到」。殘留：分享卡片實心 vs 輸出比較卡片外框（#23 分配表造成）、選中態 accent-soft 與忌同色（#23 造成）、畫面仍有 docs/v2-sources.md、「資料檔的 conflicts」、未渲染 ** 星號（#28 列舉不全，B12 符合原文）、模式分頁與 CTA 同重、1280 比較表也被裁切。
+- notes: 7c39bf2（主 agent 修鎖檔）獨立 review：Codex CLI 卡住逾 90 分鐘後停止，改由 diff-reviewer(sonnet) 審，VERDICT APPROVE，五條驗收全 MET（僅 package-lock 變動、proxy-agent 8.0.2／6.5.0 兩鏈並存、npm ci --dry-run 乾淨、CI 34737756989 success）。CI flake：e2e/favorites.spec.ts 在 CI 12 workers 下曾逾時一次（run 34743320389，rerun 綠），待處理。後續修正待使用者裁決範圍。
