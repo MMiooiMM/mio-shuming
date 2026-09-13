@@ -136,6 +136,9 @@ td:first-child{white-space:nowrap;font-weight:600}
   <ol>
     <li value="22">三級按鈕：<strong>主要</strong>實心 accent；<strong>次要</strong> surface 底、1.5px accent 框、accent 字；<strong>文字</strong>無底色、ink-soft 字、hover 加底線。小按鈕統一高 36px、左右 padding 14px、圓角 8px。</li>
     <li value="23">按鈕分配：<strong>主要</strong>為列出吉筆畫組合、開始分析、比較勾選的名字、分享卡片；<strong>次要</strong>為帶入完整分析、收藏這個名字、輸出比較卡片；<strong>文字</strong>為移除。用神覆寫切換鈕不再用綠色，選中狀態改用 accent-soft 底。模式切換大卡不動。</li>
+  </ol>
+  <div class="callout"><strong>2026-09-13 修正（H 節 #35、#33）：</strong>#23 原把「分享卡片」列主要、「輸出比較卡片」列次要，同為匯出圖卡卻分兩級，兩者統一為次要。「選中狀態改用 accent-soft 底」由 #33 取代：選中態一律實心 accent 配白字，因為粉紅與凶／忌同色系。</div>
+  <ol>
     <li value="24">radio 與 checkbox 使用 <code>accent-color: var(--accent)</code>。</li>
     <li value="25">新增中性灰 token：淺色模式底 <code>#EEEBE6</code>、字 <code>#6B645A</code>（對比 4.91:1）；深色模式另訂，對比須 ≥ 4.5:1。「中性」「不計」「生肖未知」與用神五行標籤改用灰色；黃色只留給<strong>半吉</strong>與<strong>喜忌並見</strong>。</li>
     <li value="26">候選字 chip：中性字白底加 1px line 框、ink 字；喜字維持綠、忌字維持紅；選中為實心 accent。</li>
@@ -146,6 +149,22 @@ td:first-child{white-space:nowrap;font-weight:600}
     <li value="31">既有 vitest 與 E2E 全數通過；Lighthouse 三態無障礙分數仍 ≥ 95；以 mirror-shots 拍 390／1280 前後對照截圖，並再跑一次 /mio-mirror。</li>
   </ol>
   <div class="callout"><strong>本輪不做：</strong>結果優先與降噪、手機排版破損、網頁與圖卡 chip 形狀統一、圖卡版式。</div>
+</section>
+
+<section>
+  <h2>H. UI 收斂第二輪（2026-09-13 追加凍結）</h2>
+  <p class="note">來源：docs/design-review/2026-09-13-external-ui-critique-round2.md。專修 G 節條文本身造成的問題（#23 匯出鈕分級、選中態借粉紅、#28 禁用字列舉不全）；範圍由使用者裁決。</p>
+  <ol>
+    <li value="32">模式分頁改為 segmented control：外框底 <code>#ECE8E2</code>、padding 4px、圓角 12px；選中項為 surface 底、accent 字、淡陰影；未選項為透明底、ink-soft 字（6.01:1）。深色模式另訂，對比 ≥ 4.5:1。保留 aria-pressed。</li>
+    <li value="33"><strong>選中態通則</strong>：所有切換鈕的選中態一律實心 accent 配白字（8.26:1），不得使用任何語意色淡底。先套用到用神覆寫開關。</li>
+    <li value="34">名詞說明框改用中性底 <code>#F3F1EC</code>（內文 15.02:1，深色模式另訂），保留左側 3px accent 線。</li>
+    <li value="35">「分享卡片」與「輸出比較卡片」統一為<strong>次要</strong>（外框）。</li>
+    <li value="36">畫面文字不得含內部文件路徑、內部欄位名（如「資料檔的 conflicts」）或 Markdown 語法；資料檔存純文字、UI 不做 Markdown 渲染。上游檔名與欄位名改用人話名稱；來源連結 href 不變，連結文字改為網域加 ↗。由腳本產生的資料檔依 #29 改生成腳本後重新產生。</li>
+    <li value="37">禁用字守衛保留原列舉，並在同樣 12 個狀態加入類別規則：檔案路徑、檔名、Markdown 粗體、Unicode 欄位名（<code>k[A-Z]…</code>）、<code>conflicts</code>；每個類別各做一次變異測試。</li>
+    <li value="38"><strong>同類元件一致性測試</strong>：E2E 斷言「分享卡片」與「輸出比較卡片」的 background-color、border-color、color 計算樣式完全相同。</li>
+    <li value="39">vitest 與 E2E 全數通過；Lighthouse 三態無障礙 ≥ 95；390／1280 前後對照截圖；第三次 /mio-mirror。</li>
+  </ol>
+  <div class="callout"><strong>本輪不做：</strong>資料來源收合與降噪、送出後結果優先、比較表裁切、chip 形狀統一、圖卡版式、「三才　三才」標籤重複。</div>
 </section>
 
 <section>
@@ -180,6 +199,9 @@ td:first-child{white-space:nowrap;font-weight:600}
       <tr><td>UI 修正第一輪（09-13 追加）</td><td>按鈕分級＋語意色＋拿掉開發者用語</td><td>結果優先＋降噪；手機排版破損；先收工</td></tr>
       <tr><td>圖卡範圍（09-13 追加）</td><td>只跟著改語意色</td><td>統一 chip 形狀；完全不動</td></tr>
       <tr><td>出處備註（09-13 追加）</td><td>改資料檔措辭</td><td>UI 渲染時過濾</td></tr>
+      <tr><td>UI 修正第二輪（09-13 追加）</td><td>修掉 G 節條文造成的殘留</td><td>資料來源收合＋說明限高；結果優先＋比較表裁切；先收工</td></tr>
+      <tr><td>上游檔名（09-13 追加）</td><td>改人話名稱，檔名只留在連結</td><td>保留檔名，只清內部路徑</td></tr>
+      <tr><td>匯出鈕層級（09-13 追加）</td><td>兩者都次要</td><td>兩者都主要</td></tr>
     </tbody>
   </table>
   </div>

@@ -297,3 +297,105 @@
 - verify: Lighthouse 數字、前後截圖、mirror 對照。
 - evidence: Lighthouse 三態 95／96／96（與改動前相同）；npm test 318、test:e2e 74 全綠；CI run 34743624357 success。AFTER 截圖 docs/evidence/v4g-walkthrough/（本機）。第二輪 mirror：等級仍 competent（較接近 polished）；三件事皆「部分做到」。殘留：分享卡片實心 vs 輸出比較卡片外框（#23 分配表造成）、選中態 accent-soft 與忌同色（#23 造成）、畫面仍有 docs/v2-sources.md、「資料檔的 conflicts」、未渲染 ** 星號（#28 列舉不全，B12 符合原文）、模式分頁與 CTA 同重、1280 比較表也被裁切。
 - notes: 7c39bf2（主 agent 修鎖檔）獨立 review：Codex CLI 卡住逾 90 分鐘後停止，改由 diff-reviewer(sonnet) 審，VERDICT APPROVE，五條驗收全 MET（僅 package-lock 變動、proxy-agent 8.0.2／6.5.0 兩鏈並存、npm ci --dry-run 乾淨、CI 34737756989 success）。CI flake：e2e/favorites.spec.ts 在 CI 12 workers 下曾逾時一次（run 34743320389，rerun 綠），待處理。後續修正待使用者裁決範圍。
+
+---
+
+# 第三波：UI 收斂第二輪（SPEC-v4 H 節 #32–#39，2026-09-13 追加凍結）
+
+> 來源：`docs/design-review/2026-09-13-external-ui-critique-round2.md`。專修 G 節條文本身造成的殘留。
+> 改動前截圖：`docs/evidence/v4g-walkthrough/`（`0227200`，gitignored，只在本機）。
+> 依序跑 `/mio-boom --seq`：B14 → B15；B16 由主 agent 做。
+> **本波教訓（memory `spec-rules-can-create-the-inconsistency`）**：
+> - 同類動作同一層級。
+> - 選中態不借語意色淡底。
+> - 內容守衛用類別規則，不只列舉字詞。
+
+## B14. 元件層級：分頁、選中態、說明框、匯出鈕＋同類一致性測試
+- status: TODO
+- model: opus
+- depends: B13
+- spec: SPEC-v4 #32–#35、#38（含 #23 修正說明）
+- scope:
+  - **模式分頁**（`index.html` 的 `nav.modes`／`.mode-tab`；`src/style.css` 的 `.modes`、`.mode-tab`、`.mode-tab[aria-pressed='true']`）：
+    - `.modes` 改為外框底 `#ECE8E2`、padding 4px、圓角 12px、gap 4px。
+    - 選中項 `--surface` 底、`--accent` 字、`box-shadow: 0 1px 2px rgba(0,0,0,.08)`。
+    - 未選項透明底、`--ink-soft` 字，`small` 副標沿用 `--ink-soft`。
+    - 外框底建議新增 token（例如 `--track`），深色模式在 `@media (prefers-color-scheme: dark)` 另訂，先算對比 ≥ 4.5:1 再寫。
+    - 保留 `aria-pressed` 與既有 E2E 用的按鈕名稱（`/分析名字/`、`我要取名`）。
+  - **選中態通則 #33**：
+    - `src/style.css` 的 `.button--toggle.button--on`（現為 `--accent-soft` 底）改為實心 `--accent` 底、白字、`--accent` 框。
+    - grep 全 `src/` 與 `index.html` 的 `--on`、`aria-pressed='true'`、`:checked`、`[aria-selected`，找出所有選中態，確認沒有任何一個使用 `--accent-soft`／`--good-soft`／`--bad-soft`／`--mid-soft` 當底。`.chip--on` 已是實心 accent，保持不變。
+  - **名詞說明框 #34**：`.term-text` 背景由 `var(--accent-soft)` 改為中性底 token（淺色 `#F3F1EC`；深色另訂，內文對比 ≥ 4.5:1）；左側 3px `--accent` 線保留。
+  - **匯出鈕 #35**：`src/main.ts:368` 的「分享卡片」加上 `button--secondary`（與 `src/naming-ui.ts:391`「輸出比較卡片」相同 class 組合）。
+  - **同類一致性測試 #38**：新增或擴充 `e2e/visual-tokens.spec.ts`，兩個寬度：
+    - 做出分析結果與比較視圖，讀兩顆匯出鈕的 `background-color`、`border-color`、`color`，斷言三者完全相等。
+    - 另斷言：
+      - 選中的用神覆寫開關為實心 accent 底、白字。
+      - `.term-text` 展開後背景為 `rgb(243, 241, 236)`（淺色模式）。
+      - 選中分頁背景為 surface、文字為 accent；未選分頁背景透明。
+  - 既有 `e2e/visual-tokens.spec.ts` 裡若有斷言 `.term-text`、分頁或用神開關的舊色（例如 accent-soft），依新規格更新，並在 notes 記錄。
+- verify:
+  - **before**：在改動前的 build 上跑新增斷言，記錄紅燈數量與實際色值。
+  - **after**：全綠。
+  - **截圖**：起 `npx vite build && npx vite preview --port 4173 --strictPort`，再用 `node tools/raw/mirror-shots.mjs <scratchpad>/B14-after` 拍 390／1280 與兩張卡。
+  - **變異測試**：
+    - 把「分享卡片」的 `button--secondary` 拿掉，#38 一致性斷言要紅。
+    - 把 `.button--toggle.button--on` 改回 `--accent-soft`，選中態斷言要紅。
+    - 兩者都要還原。
+  - **深色模式**：用 Playwright `colorScheme: 'dark'` 量分頁未選字與外框底、說明框內文與底的對比，程式計算須 ≥ 4.5。
+  - `npm test`、`npm run test:e2e`、`npm run build` 全綠。
+- evidence:
+- notes:
+
+## B15. 資料來源文字改人話＋守衛類別規則
+- status: TODO
+- model: opus
+- depends: B14
+- spec: SPEC-v4 #36–#37（沿用 #29 的改寫原則）
+- scope:
+  - **先寫守衛，而且要先紅**。擴充 `e2e/no-dev-jargon.spec.ts`：保留 `BANNED` 列舉，新增 `BANNED_PATTERNS`，在既有 12 個狀態逐一套用；命中時印出類別名、命中字串與前後 20 字。
+    - 路徑 `/[\w.-]+\/[\w./-]+\.(md|ts|mjs|json)\b/`
+    - 檔名 `/\b[\w-]+\.(txt|csv|xml|zip|md|json|mjs|ts)\b/`
+    - Markdown 粗體 `/\*\*[^*\n]+\*\*/`
+    - Unicode 欄位名 `/\bk[A-Z][A-Za-z]+\b/`
+    - 內部欄位名 `/\bconflicts\b/`
+  - **已知命中點**（2026-09-13 主 agent 以腳本掃渲染欄位取得，以守衛實跑為準）：
+    - `src/data/yongshen.json`：`strength.ruleSource.note` 有 `docs/v2-sources.md`；`strength.operationalRules.congGe` 有 `**永遠不改判用神**`。
+    - `src/data/glossary.json`：用神詞條 `source.note` 有 `docs/v2-sources.md`。
+    - `src/data/char-wuxing.json`：`source.wuxing.dataset` 為 `gsc_pinyin.csv`；`source.wuxing.caveat` 有 `**來源未交代判定依據**`；`source.common.dataset` 為 `kBigFive`；`source.common.caveat` 有 `**不等同**`。先查它是人工檔還是腳本產生（找 `tools/gen-*.mjs` 中寫入 char-wuxing 的腳本），依 #29 決定改法。
+    - `src/data/components.json`：`source.ids` 為 `ids.txt`（腳本產生，改 `tools/gen-components.mjs`）。
+    - `src/data/kangxi-strokes.json`：`source.unihan` 為 `Unihan_IRGSources.txt`、`source.cjkRadicals` 為 `CJKRadicals.txt`（腳本產生，改 `tools/gen-kangxi-strokes.mjs`）。
+    - `src/ui-shared.ts:138`：「分歧記於資料檔的 conflicts」，改成人話，例如「各家分歧另有記錄，本站不擅自調和」。
+    - `src/ui-shared.ts` 的 `sourcesSection`：連結文字目前是整串 URL（`${esc(url)}`），URL 裡含 `Unihan_OtherMappings.txt`、`Unihan.zip` 等檔名。改為顯示網域加 ↗（例如 `unicode.org ↗`），`href` 不變；可用 `new URL(url).hostname` 去掉 `www.`，URL 無效時照 #36 精神顯示「來源連結 ↗」。加 `aria-label` 帶完整來源標題，維持 Lighthouse 連結名稱分數。
+  - **改寫原則**：
+    - 「」內原文引文一字不改。
+    - Markdown 星號直接移除（保留文字）。
+    - 上游檔名與欄位名改人話，例如 `Unihan_IRGSources.txt` 改「Unicode 漢字資料庫（Unihan）的部首筆畫欄位」、`kBigFive` 改「Big5 對照欄位」、`gsc_pinyin.csv` 改「開源漢字五行資料表」、`ids.txt` 改「漢字結構拆解表（IDS）」。
+    - 腳本產生的資料檔不可手改 JSON，要改 `tools/gen-*.mjs` 後重跑；缺 `tools/raw/` 上游檔時回報 BLOCKED 並說明缺哪個。
+    - 重跑後逐欄比對新舊 JSON，確認只有 `source` 欄位變動（B12 的做法）。
+  - 既有 vitest／E2E 若有斷言依賴舊字串或整串 URL 的連結文字（例如 glossary／sources 的測試），同步更新並在 notes 記錄。
+- verify:
+  - **before**：守衛在改寫前實跑，記錄紅燈數量與各類別命中清單（貼進 notes）。
+  - **after**：守衛全綠。
+  - **變異測試**：每個類別各一次，共五次，各自還原。例如在某 note 放回 `docs/v2-sources.md`、`**x**`、`ids.txt`、`kBigFive`、`conflicts`，逐一確認守衛變紅。
+  - **資料完整性**：
+    - `git diff src/data/` 審閱：「」內引文沒被動到（抽出前後所有「…」片段比對，結果貼進 evidence）。
+    - 腳本重產的 JSON 逐欄比對，只有 `source` 變動。
+  - **Lighthouse**：`node tools/lighthouse-a11y.mjs` 三態仍 ≥ 95，連結文字改短後要確認沒掉分。
+  - `npm test`、`npm run test:e2e`、`npm run build` 全綠。
+- evidence:
+- notes:
+
+## B16. 回歸＋第三次 mirror（主 agent）
+- status: TODO
+- model: main
+- depends: B15
+- spec: SPEC-v4 #39
+- scope:
+  - `node tools/lighthouse-a11y.mjs` 三態 ≥ 95。
+  - `tools/raw/mirror-shots.mjs` 拍 AFTER 到 `docs/evidence/v4h-walkthrough/`，與 `v4g-walkthrough/` 對照。
+  - 第三次 `/mio-mirror`，prompt 明標 BEFORE 與 AFTER，並列出本輪只改了哪幾件。
+  - 結論與自評對照追加到 `docs/design-review/`。
+- verify: Lighthouse 數字、前後截圖、mirror 對照。
+- evidence:
+- notes:
