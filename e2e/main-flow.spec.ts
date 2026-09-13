@@ -22,6 +22,10 @@ test('取名模式：姓＋預產期 → 筆畫組合 → 候選字 → 收藏 �
   await expect(naming).toBeVisible();
   await expect(page.locator('#mode-analysis')).toBeHidden();
 
+  await expect(
+    naming.locator('.field__hint--privacy').getByText('資料只在你的裝置計算，不上傳'),
+  ).toBeVisible();
+
   await page.fill('#naming-surname', '王');
   await page.fill('#naming-year', '2026');
   await page.fill('#naming-month', '6');
@@ -75,6 +79,12 @@ test('分析模式：姓名＋生日＋時辰＋縣市 → 五格、四柱、用
   await page.getByRole('button', { name: /分析名字/ }).click();
   await expect(page.locator('#mode-analysis')).toBeVisible();
 
+  await expect(
+    page
+      .locator('#mode-analysis .field__hint--privacy')
+      .getByText('資料只在你的裝置計算，不上傳'),
+  ).toBeVisible();
+
   await page.fill('#surname', '王');
   await page.fill('#givenName', '小明');
   await page.fill('#year', '1998');
@@ -120,4 +130,12 @@ test('分析模式：姓名＋生日＋時辰＋縣市 → 五格、四柱、用
 
 test('首頁未送出前也不可橫向捲動', async ({ page }) => {
   await expectNoHorizontalScroll(page, `${test.info().project.name} 首頁`);
+});
+
+test('頁尾免責與隱私聲明可見（SPEC-v4 #14）', async ({ page }) => {
+  const footer = page.locator('.page__footer');
+  await expect(footer).toBeVisible();
+  await expect(footer.getByText('不會把姓名、生日等輸入送到任何伺服器')).toBeVisible();
+  await expect(footer.getByText('收藏名單只存在這台瀏覽器裡')).toBeVisible();
+  await expect(footer.getByText('命理結果僅供參考')).toBeVisible();
 });
