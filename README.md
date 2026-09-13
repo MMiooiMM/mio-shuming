@@ -15,7 +15,8 @@
 每條規則都標出處，各分項獨立評述，**不合成單一總分**。
 
 凍結的驗收判準：v1 見 [SPEC.md](./SPEC.md)、v2（八字）見 [SPEC-v2.md](./SPEC-v2.md)、
-v3（取名模式）見 [SPEC-v3.md](./SPEC-v3.md)。
+v3（取名模式）見 [SPEC-v3.md](./SPEC-v3.md)、
+v4（分享卡片・摘要・品質門檻）見 [SPEC-v4.md](./SPEC-v4.md)。
 
 ## 開發
 

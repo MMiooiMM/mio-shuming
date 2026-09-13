@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>數名其妙 v4 — 凍結 Acceptance</title>
+<style>
+:root{
+  --bg:#f7f5f1; --surface:#fff; --ink:#1f1c19; --soft:#5c554d; --line:#e2ddd4;
+  --accent:#8c2f1f; --accent-soft:#f3e6e2;
+  --warn:#8a6d1f; --warn-soft:#f6efdc;
+  --good:#2f6b3f; --good-soft:#e6f0e8;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#171513; --surface:#211e1b; --ink:#f0ebe4; --soft:#b3aaa0; --line:#362f2a;
+    --accent:#e2856f; --accent-soft:#3a2521;
+    --warn:#e0c274; --warn-soft:#322a1a;
+    --good:#8fce9f; --good-soft:#22301f;
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink); font-size:16px; line-height:1.75;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+.wrap{max-width:44rem;margin:0 auto;padding:1.5rem 1rem 4rem}
+header{text-align:center;margin-bottom:1.75rem}
+h1{font-size:1.35rem;margin:0;letter-spacing:.18em;text-indent:.18em}
+.sub{margin:.4rem 0 0;font-size:.8125rem;color:var(--soft)}
+.frozen{
+  display:inline-block;margin-top:.6rem;padding:.15rem .7rem;border-radius:999px;
+  background:var(--good-soft);color:var(--good);font-size:.75rem;font-weight:600;
+}
+section{
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:1rem 1.1rem;margin-bottom:1rem;
+}
+h2{
+  font-size:1rem;margin:0 0 .6rem;letter-spacing:.06em;
+  padding-bottom:.5rem;border-bottom:1px solid var(--line);
+}
+ol{margin:0;padding-left:1.4rem}
+ol li{margin:.5rem 0}
+ol li::marker{color:var(--accent);font-weight:600}
+strong{color:var(--accent)}
+.note{font-size:.8125rem;color:var(--soft);margin:.35rem 0 0}
+.callout{
+  border-left:3px solid var(--warn);background:var(--warn-soft);
+  padding:.7rem .85rem;border-radius:6px;font-size:.875rem;margin:.5rem 0 0;
+}
+.callout strong{color:var(--warn)}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:.5rem -.35rem 0}
+table{border-collapse:collapse;width:100%;min-width:33rem;font-size:.8125rem}
+th,td{text-align:left;padding:.45rem .55rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--soft);font-weight:600;white-space:nowrap}
+td:first-child{white-space:nowrap;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>數名其妙 v4</h1>
+  <p class="sub">可分享的產品外殼 — 開發・驗證・review 的唯一判準</p>
+  <span class="frozen">2026-09-13 使用者確認凍結</span>
+</header>
+
+<section>
+  <h2>背景</h2>
+  <p class="note" style="font-size:.9375rem;color:var(--ink)">
+  v1–v3 的計算引擎與出處追溯已完成，缺的是「讓人看得懂、敢分享、傳得開」的產品外殼。本輪定位為<strong>可分享的個人作品</strong>：親友之間（多半經 LINE 傳給家人長輩）用得順、看起來專業；不經營搜尋流量。</p>
+</section>
+
+<section>
+  <h2>A. 分析卡片（分享）</h2>
+  <ol>
+    <li value="1">分析結果區提供「分享卡片」按鈕，以<strong>前端 Canvas</strong> 繪製 PNG，<strong>不新增執行期依賴套件</strong>。</li>
+    <li value="2">卡片內容：姓名、生日（年月日）、生肖、四柱干支；外加<strong>分項標籤並列</strong>（三才、五格各格、生肖喜忌字根、用神匹配）——每項各自一個判定，<strong>不計數、不加總</strong>。</li>
+    <li value="3">卡片<strong>不印</strong>時分、出生地。未填時辰時，四柱與八字相關標籤不出現。</li>
+    <li value="4">卡片底部固定印：站名＋網址＋「僅供參考」。</li>
+    <li value="5">支援 Web Share（含檔案）的裝置叫出系統分享選單；不支援時退回下載 PNG。兩條路徑都要有 E2E 或實機證據。</li>
+    <li value="6">立春當日未定生肖等不確定情況，卡片據實呈現兩種可能，不擅自選一個。</li>
+    <li value="7"><strong>網址不帶任何使用者輸入</strong>——全站不寫入 query／hash。</li>
+  </ol>
+  <div class="callout"><strong>為什麼不做分享連結：</strong>出生日期、時辰、出生地寫進網址會留在聊天記錄與瀏覽紀錄；改由使用者提出的圖片卡片分享，個資只印必要欄位。</div>
+</section>
+
+<section>
+  <h2>B. 結果摘要與名詞解釋</h2>
+  <ol>
+    <li value="8">分析結果頂端有摘要區，與卡片使用<strong>同一組</strong>分項標籤（同一個產生函式）。</li>
+    <li value="9">名詞（人格、天格、地格、外格、總格、三才、用神、十神、藏干、真太陽時等）可就地點開說明；滑鼠與鍵盤（Enter／Space）皆可展開收合，並具正確的 <code>aria-expanded</code>。</li>
+    <li value="10">解釋文字集中於 <code>src/data/</code> 資料檔，不寫死在 UI 程式裡。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>C. 收藏比較（取名模式）</h2>
+  <ol>
+    <li value="11">收藏資料加存預產期；<strong>舊的 <code>mio-shuming:favorites:v1</code> 資料仍可讀取</strong>。無預產期的舊收藏，生肖標籤顯示「未知」，不猜。</li>
+    <li value="12">可勾選 2–5 個收藏並排比較：各名字的三才、五格（僅列取名可改變、計吉凶的格）、生肖喜忌字根標籤。</li>
+    <li value="13">比較結果可輸出比較卡片（輸出方式同 #5）；卡片<strong>只印生肖、不印預產期</strong>；預產期在立春 ±3 週內則印兩個生肖。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>D. 聲明</h2>
+  <ol>
+    <li value="14">頁尾常駐免責與隱私聲明，內容含：所有計算在裝置上完成、不上傳；收藏只存在此瀏覽器；命理結果僅供參考。</li>
+    <li value="15">兩種模式的出生資料表單旁，各有一行「資料只在你的裝置計算，不上傳」。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>E. 分享預覽</h2>
+  <ol>
+    <li value="16"><code>index.html</code> 補上 OG／Twitter card meta、favicon、<code>apple-touch-icon</code>；OG 圖為固定圖片。以 LINE 或 FB 的預覽除錯工具實際抓取，截圖當證據。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>F. 品質門檻</h2>
+  <ol>
+    <li value="17">新增 Playwright E2E，在寬度 <strong>390px</strong> 與 <strong>1280px</strong> 各跑一遍：兩模式主流程、分析卡片、收藏比較與比較卡片、名詞解釋的鍵盤操作。</li>
+    <li value="18">CI 流程為 <code>npm test</code> → Playwright → build，全過才部署；任一失敗即不部署。</li>
+    <li value="19">首頁、分析結果、取名結果三種狀態的 Lighthouse 無障礙分數皆 <strong>≥ 95</strong>，附報告數字當證據。</li>
+    <li value="20">390px 寬時整頁不可橫向捲動（表格限於自身容器內捲動），以 Playwright 斷言 <code>scrollWidth &lt;= clientWidth</code> 驗證。</li>
+    <li value="21">既有 vitest 全數通過；動到畫面外觀的部分須走 <code>/mio-mirror</code>。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>沿用原則（v1–v3 全數繼承）</h2>
+  <p class="note" style="font-size:.9375rem;color:var(--ink)">不合成單一總分；每條規則出處寫進資料檔 <code>source</code> 欄位並於「資料來源」呈現；流派衝突不擅自調和；引擎純函式；罕字與範圍外據實回報不猜；GPLv2。</p>
+</section>
+
+<section>
+  <h2>Out of Scope</h2>
+  <p class="note" style="font-size:.9375rem;color:var(--ink)">網址帶參數分享或重算、列印版面、SEO 靜態頁、流量統計、回饋管道、字義與讀音資料、候選字排序改良、PWA 與離線、國際化。</p>
+</section>
+
+<section>
+  <h2>Grill 決策紀錄</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>決策點</th><th>裁決</th><th>未採用的選項</th></tr></thead>
+    <tbody>
+      <tr><td>產品定位</td><td>可分享的個人作品</td><td>經營流量的產品；只補專業度底線</td></tr>
+      <tr><td>v4 範圍</td><td>分享＋聲明＋手機/無障礙/E2E＋摘要/收藏比較</td><td>（四項全選）</td></tr>
+      <tr><td>分享方式</td><td>只做圖片卡片（使用者提出）</td><td>網址帶參數重算；圖片＋網址</td></tr>
+      <tr><td>摘要形式</td><td>分項標籤並列</td><td>計數統計（變相總分）；一句話文字摘要</td></tr>
+      <tr><td>卡片個資</td><td>姓名＋生日＋生肖＋四柱</td><td>只有姓名＋生日；全部含時分與出生地</td></tr>
+      <tr><td>收藏比較</td><td>並排分項標籤＋可輸出卡片</td><td>只在頁面上並排</td></tr>
+      <tr><td>卡片輸出</td><td>Web Share＋下載 PNG</td><td>只下載 PNG</td></tr>
+      <tr><td>品質門檻</td><td>Playwright 進 CI 擋部署＋Lighthouse 無障礙 ≥ 95</td><td>Playwright 只在本機跑</td></tr>
+      <tr><td>列印版面</td><td>不做</td><td>完整報告列印</td></tr>
+      <tr><td>聲明位置</td><td>頁尾常駐＋表單旁一行</td><td>首次進站彈窗確認</td></tr>
+      <tr><td>名詞解釋</td><td>就地點開說明</td><td>獨立名詞區塊</td></tr>
+      <tr><td>卡片署名</td><td>站名＋網址＋僅供參考</td><td>只印僅供參考</td></tr>
+      <tr><td>比較卡個資</td><td>只印生肖、不印預產期</td><td>印預產期＋生肖</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+<p class="note" style="text-align:center">本檔由 SPEC-v4.md 轉製，內容以 SPEC-v4.md 為準。</p>
+</div>
+</body>
+</html>
