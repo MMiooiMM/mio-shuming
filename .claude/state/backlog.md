@@ -410,3 +410,33 @@
 - verify: Lighthouse 數字、前後截圖、mirror 對照。
 - evidence: Lighthouse 三態 95／96／96（不變）；CI 34755735858、34755839533、34755933722 皆 success；AFTER 截圖 docs/evidence/v4h-walkthrough/（本機）。第三輪 mirror：competent（中上），未跨級；五件事 ①②③④ 做到、⑤ 部分做到（取名結果頂部裸網址、repo 名、dataset 編號、0x 碼位、CHISE 內文網址仍在）。本輪新增問題：選中態實心磚紅與凶／忌同色相（用神覆寫木金水看起來像選了三個凶）、「?」展開態實心紅圓像警告徽章。
 - notes: 後續範圍待使用者裁決。評審前三建議：資料來源收合＋拿掉結果頂部裸網址；標題窄寬直式堆疊＋選中態改墨色＋「?」不用實心；送出後結果優先。
+
+## B17. 資料來源收合＋識別碼清除＋出錯捲動（主 agent）
+- status: DONE(6ef8dda)
+- model: main
+- depends: B16
+- spec: SPEC-v4 #40–#46（I 節，2026-09-13 凍結）
+- scope:
+  - `src/ui-shared.ts` `sourcesSection`：包成 `<details>`，摘要「資料來源（N 項）」，N＝rows.length；樣式沿用 `.combo > summary`。
+  - `src/naming-ui.ts:161`：「出處：${url}」改網域 ↗ 連結（`linkText`）。
+  - `tools/gen-char-wuxing.mjs`、`tools/gen-components.mjs`：改 dataset／caveat／ids 措辭（repo 名、0x 碼位、chise 網址），重產 JSON。
+  - `src/naming-ui.ts` submit 的兩條錯誤路徑補 `scrollIntoView`。
+  - `e2e/no-dev-jargon.spec.ts`：三類新規則＋來源狀態先展開 details。
+  - 新 E2E：兩模式成功／出錯送出後結果頂端在視窗內。
+- verify:
+  - **before**：新守衛先對舊碼跑，記錄紅燈清單。
+  - **after**：全綠；變異測試三類＋「拿掉展開」各一次。
+  - 重產 JSON 逐欄比對只變 source 欄位。
+  - `npm test`、`npm run test:e2e`、`npm run build` 全綠。
+- evidence: 捲動前提實測（改動前）：成功送出兩模式兩寬 top=0；取名出錯 top=605/603 未捲動。守衛 before（舊 build＋新三類）20 failed／4 passed，命中 0xA440、0xC67E、ben-hua/general_standard_chinese、zhenyangze/chinese-wuxing、http://www.chise.org/、https://tianjige.club/tw/naming/wuge → after 全綠。變異 M1（注入 https://mut.example/x、foo-org/bar-repo、0x4E00＋拿掉取名出錯捲動）：三類皆紅、兩寬取名出錯捲動測試皆紅；M2（保留注入、拿掉展開）：來源狀態 2 passed＝守衛失明，證明展開必要；加 assertNoDevJargon 內展開全部 details.sources-toggle 後注入 → 20 failed／4 passed；皆已還原。重產 JSON 逐欄比對只變 char-wuxing.source.{wuxing.dataset,wuxing.caveat,common.dataset}、components.source.ids。頁長 390 取名 7482→3872、分析 9925→6735；1280 取名 6110→3459、分析 8383→6029。npm test 321→323；test:e2e 82→92；tsc OK；Lighthouse 95／95／96（取名態 96→95，唯一失分為既有深色模式送出鈕 2.68:1，本輪新連結的 1.76:1 已修）。Codex VERDICT: APPROVE（EVIDENCE none），其指出的 margin-bottom 被覆蓋已修。
+- notes: before 截圖 `docs/evidence/v4i-before/`、after `docs/evidence/v4i-after/`（本機）。捲動斷言加嚴為「頂端貼齊或已捲到底」——單純「在視窗內」對舊碼也綠。Deviation：sources details 不掛 `.combo` class（naming toggle listener 與 4 支測試以 details.combo 為選擇器），改用共用 CSS 選擇器。既有問題未處理：兩模式 `#sources` id 重複（Codex 非阻擋）。
+
+## B18. 回歸＋第四次 mirror（主 agent）
+- status: DONE(docs/design-review/2026-09-13-external-ui-critique-round4.md)
+- model: main
+- depends: B17
+- spec: SPEC-v4 #47
+- scope: Lighthouse 三態 ≥ 95；AFTER 截圖 `docs/evidence/v4i-after/`；第四次 `/mio-mirror`；結論追加到 `docs/design-review/`。
+- verify: Lighthouse 數字、前後截圖、mirror 對照。
+- evidence: Lighthouse 95／95／96（取名態唯一失分為既有深色送出鈕 2.68:1）；AFTER docs/evidence/v4i-after/（本機）。第四輪 mirror：competent，未跨級。三件事：收合做到但收合列元件不及格（無 chevron、框中框）；網域連結做到；識別碼部分——分享圖卡頁尾印 github.io 帳號＋repo 名（Canvas 不在守衛範圍）、81 數理有對維護者說話的後設文字。
+- notes: 評審前三建議：比較表溢出改直排卡；統一有箭頭的摺疊列（資料來源＋筆畫組）；分析頁細節預設收合＋說明字 13px。E2E「取名結果（展開候選字與忌字）」在 12 worker 並行下 12/12 逾時失敗、串行 6/6 通過（8.7s），屬負載不穩定。
