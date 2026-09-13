@@ -365,7 +365,7 @@ function summarySection(tags: SummaryTag[]): string {
           .join('')}
       </dl>
       <div class="summary__actions">
-        <button type="button" class="button button--inline" data-action="share-card">分享卡片</button>
+        <button type="button" class="button button--inline button--secondary" data-action="share-card">分享卡片</button>
         <span class="section__note" role="status" data-card-status></span>
       </div>
     </section>`;

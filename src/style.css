@@ -15,6 +15,10 @@
   /* 中性灰（SPEC-v4 #25）：中性、不計、生肖未知、用神五行。#6b645a on #eeebe6 = 4.91:1。 */
   --neutral: #6b645a;
   --neutral-soft: #eeebe6;
+  /* 模式分頁外框底（SPEC-v4 #32）：未選字 --ink-soft #5c554d on #ece8e2 = 6.01:1。 */
+  --track: #ece8e2;
+  /* 名詞說明框中性底（SPEC-v4 #34）：--ink on #f3f1ec = 15.02:1。 */
+  --note-bg: #f3f1ec;
   --radius: 12px;
   --gap: 1rem;
 }
@@ -38,6 +42,10 @@
     /* #bdb5ab on #2e2a26 = 7.02:1 */
     --neutral: #bdb5ab;
     --neutral-soft: #2e2a26;
+    /* --ink-soft #b3aaa0 on #2e2a26 = 6.22:1 */
+    --track: #2e2a26;
+    /* --ink #f0ebe4 on #2a2622 = 12.6:1 */
+    --note-bg: #2a2622;
   }
 }
 
@@ -318,10 +326,11 @@ input[type='number']::-webkit-inner-spin-button {
   cursor: pointer;
 }
 
+/* 選中態通則（SPEC-v4 #33）：實心 accent，不借語意色淡底。 */
 .term-toggle[aria-expanded='true'] {
   border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--accent);
+  color: var(--surface);
 }
 
 .term-toggle:focus-visible {
@@ -335,7 +344,8 @@ input[type='number']::-webkit-inner-spin-button {
   padding: 0.5rem 0.75rem;
   border-left: 3px solid var(--accent);
   border-radius: 6px;
-  background: var(--accent-soft);
+  /* 中性底（SPEC-v4 #34）：說明不是警告，不用凶／忌同色系的粉紅。 */
+  background: var(--note-bg);
   font-size: 0.8125rem;
   line-height: 1.6;
 }
@@ -769,7 +779,8 @@ select:focus-visible {
 }
 
 /* 未選中的五行按鈕做成外框樣式，才看得出哪些現在是喜用。
-   選中不用綠色——綠色是「吉」的語意色（SPEC-v4 #23）。 */
+   選中態通則（SPEC-v4 #33）：實心 --accent 配白字，不用綠色（吉）也不用任何語意色淡底（粉紅＝凶／忌）。
+   字用 --surface：淺色模式即白字；深色模式 accent 是淺色，白字對比不足，比照 .chip--on。 */
 .button--toggle {
   color: var(--ink-soft);
   background: transparent;
@@ -777,8 +788,8 @@ select:focus-visible {
 }
 
 .button--toggle.button--on {
-  color: var(--accent);
-  background: var(--accent-soft);
+  color: var(--surface);
+  background: var(--accent);
   border-color: var(--accent);
 }
 
@@ -808,11 +819,15 @@ select:focus-visible {
 
 /* --- v3：取名模式 ---------------------------------------------------------- */
 
+/* 模式分頁是導覽，做成 segmented control（SPEC-v4 #32），不和主要 CTA 搶同一塊實心紅。 */
 .modes {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  gap: 4px;
+  padding: 4px;
   margin-bottom: 1.1rem;
+  background: var(--track);
+  border-radius: 12px;
 }
 
 .mode-tab {
@@ -820,15 +835,15 @@ select:focus-visible {
   flex-direction: column;
   align-items: center;
   gap: 0.2rem;
-  padding: 0.7rem 0.5rem;
+  padding: 0.6rem 0.5rem;
   font-size: 1rem;
   font-family: inherit;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: var(--ink);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 10px;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
   cursor: pointer;
 }
 
@@ -840,14 +855,9 @@ select:focus-visible {
 }
 
 .mode-tab[aria-pressed='true'] {
-  color: #fff;
-  background: var(--accent);
-  border-color: var(--accent);
-}
-
-.mode-tab[aria-pressed='true'] small {
-  color: #fff;
-  opacity: 0.85;
+  color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .mode-tab:focus-visible {
