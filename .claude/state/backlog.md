@@ -311,7 +311,7 @@
 > - 內容守衛用類別規則，不只列舉字詞。
 
 ## B14. 元件層級：分頁、選中態、說明框、匯出鈕＋同類一致性測試
-- status: TODO
+- status: DONE(1643fcf)
 - model: opus
 - depends: B13
 - spec: SPEC-v4 #32–#35、#38（含 #23 修正說明）
@@ -344,8 +344,14 @@
     - 兩者都要還原。
   - **深色模式**：用 Playwright `colorScheme: 'dark'` 量分頁未選字與外框底、說明框內文與底的對比，程式計算須 ≥ 4.5。
   - `npm test`、`npm run test:e2e`、`npm run build` 全綠。
-- evidence:
+- evidence: before（新斷言跑舊 CSS）visual-tokens 10 failed／6 passed → after 16/16。#38 兩匯出鈕 bg rgb(255,255,255)／color rgb(140,47,31)／四邊框 rgb(140,47,31) 完全相等（before 分享卡片 bg rgb(140,47,31) 白字）。分頁外框 rgba(0,0,0,0)→rgb(236,232,226)；選中分頁 surface＋accent、未選透明＋rgb(92,85,77)。說明框 rgb(243,230,226)→rgb(243,241,236)、3px accent 左線保留。用神開關選中 rgb(243,230,226)→rgb(140,47,31) 白字。深色對比：分頁未選 6.22、選中 6.17、開關選中 6.17、說明框 12.66。變異：拿掉分享卡片 button--secondary → #38 紅 2/2；開關改回 accent-soft → 紅 2/2；皆還原。npm test 318、test:e2e 82（原 74）、build ok。截圖 scratchpad `B14-after/`（390／1280＋兩張卡）、`B14-crop-*`。Codex VERDICT: APPROVE。CI run 34754780218 success（build＋deploy）。
 - notes:
+  - **Deviation 1（#33 範圍）**：backlog 的 grep 清單沒列 `aria-expanded`，但 `.term-toggle[aria-expanded='true']`（名詞「?」鈕展開態）也用 `--accent-soft` 底；依 #33「所有切換鈕的選中態…不得使用任何語意色淡底」一併改實心 accent＋`--surface` 字，並加斷言。其餘 `*-soft` 底（`.error`、`.notice`、`.tag--*`）是狀態／語意標籤，不是選中態，不動。`.chip--on` 原本就是實心，不動。
+  - **Deviation 2（白字）**：選中態字色用 `var(--surface)` 不寫死 `#fff`：淺色 surface 即白（符合 #33）；深色 accent 為淺色 #e2856f，白字只有 2.68:1，比照既有 `.chip--on` 用 surface（6.17:1）。
+  - 新 token：`--track`（淺 #ece8e2／深 #2e2a26）、`--note-bg`（淺 #f3f1ec／深 #2a2622）。`.mode-tab` 拿掉邊框、內圓角 8px、padding 0.7rem→0.6rem；刪除選中分頁 `small` 白字規則，副標沿用 ink-soft。深色選中分頁（surface）比外框暗，靠 accent 字與陰影區分，留給 B16 mirror 看。
+  - 既有斷言更新：`分析結果` 測試原斷言開關選中 `accentSoft`、分享卡片 bg `accent`（主要），改為實心 accent 白字、分享卡片 surface＋accent 框。按鈕名稱（`/分析名字/`、`我要取名`）與 `aria-pressed` 保留。
+  - Codex 兩個 NIT 已採納：#38 比對四邊框色；深色測試釘住選中分頁與開關的實際色值。加強後的 #38 未再重跑變異（前一版同一語意已紅）。
+  - 未改資料來源文字（留給 B15）。
 
 ## B15. 資料來源文字改人話＋守衛類別規則
 - status: TODO
