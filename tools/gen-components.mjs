@@ -170,7 +170,7 @@ const payload = {
     '生肖字根命中索引，由 tools/gen-components.mjs 從 CJKVI IDS 推導產生，請勿手改。',
   source: {
     url: 'https://github.com/cjkvi/cjkvi-ids',
-    ids: 'cjkvi-ids 的 ids.txt，源自 CHISE 專案（http://www.chise.org/）',
+    ids: '漢字結構拆解表（IDS，cjkvi-ids 專案），源自 CHISE 專案（http://www.chise.org/）',
     license: 'GPLv2',
     variantTable: '康熙部首變體對照（氵→水、艹→艸…）為人工維護。',
   },

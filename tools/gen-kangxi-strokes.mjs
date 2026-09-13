@@ -133,7 +133,7 @@ const payload = {
     '康熙筆畫表，由 tools/gen-kangxi-strokes.mjs 從 Unicode Han Database 推導產生，請勿手改。',
   source: {
     url: 'https://www.unicode.org/Public/UCD/latest/ucd/Unihan.zip',
-    unihan: 'Unihan_IRGSources.txt 的康熙部首與部首內筆畫欄位（Unicode 17.0.0）',
+    unihan: 'Unicode 漢字資料庫（Unihan）的部首筆畫欄位（Unicode 17.0.0）',
     cjkRadicals: 'https://www.unicode.org/Public/UCD/latest/ucd/CJKRadicals.txt',
     unicodeVersion: '17.0.0',
     derivation: '康熙筆畫 = 康熙部首本字筆畫 + 部首外筆畫；不採用現代筆畫計法',

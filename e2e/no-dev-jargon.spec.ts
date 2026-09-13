@@ -5,22 +5,40 @@ import type { Page } from '@playwright/test';
 
 const BANNED = ['SPEC', 'localStorage', 'curl', 'kTotalStrokes', 'kRSUnicode', '$comment', 'tools/', 'src/'];
 
+// SPEC-v4 #36–#37：列舉字詞擋不住同類的新字，另加類別規則。
+const BANNED_PATTERNS: { category: string; pattern: RegExp }[] = [
+  { category: '檔案路徑', pattern: /[\w.-]+\/[\w./-]+\.(md|ts|mjs|json)\b/g },
+  { category: '檔名', pattern: /\b[\w-]+\.(txt|csv|xml|zip|md|json|mjs|ts)\b/g },
+  { category: 'Markdown 粗體', pattern: /\*\*[^*\n]+\*\*/g },
+  { category: 'Unicode 欄位名', pattern: /\bk[A-Z][A-Za-z]+\b/g },
+  { category: '內部欄位名', pattern: /\bconflicts\b/g },
+];
+
 const KEY = 'mio-shuming:favorites:v1';
 const FAVORITES = [
   { surname: '王', givenName: '小明', due: { year: 2026, month: 6, day: 15 } },
   { surname: '王', givenName: '美玲' },
 ];
 
+function around(text: string, index: number, length: number): string {
+  return text.slice(Math.max(0, index - 20), index + length + 20);
+}
+
 async function assertNoDevJargon(page: Page, label: string): Promise<void> {
   const text = await page.locator('body').innerText();
+  const hits: string[] = [];
   for (const word of BANNED) {
     const index = text.indexOf(word);
     if (index !== -1) {
-      const start = Math.max(0, index - 20);
-      const context = text.slice(start, index + word.length + 20);
-      expect(index, `${label} 命中開發者用語「${word}」，前後文：…${context}…`).toBe(-1);
+      hits.push(`列舉字詞「${word}」：…${around(text, index, word.length)}…`);
     }
   }
+  for (const { category, pattern } of BANNED_PATTERNS) {
+    for (const m of text.matchAll(pattern)) {
+      hits.push(`${category}「${m[0]}」：…${around(text, m.index, m[0].length)}…`);
+    }
+  }
+  expect(hits, `${label} 命中開發者用語：\n${hits.join('\n')}`).toEqual([]);
 }
 
 async function analyseWithTime(page: Page): Promise<void> {

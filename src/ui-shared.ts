@@ -102,6 +102,20 @@ function glossarySourceRows(): [string, string, string][] {
 }
 
 /**
+ * 來源連結的顯示文字：網域加 ↗（SPEC-v4 #36）。整串 URL 會把上游檔名
+ * （Unihan.zip 之類）搬上畫面；href 照舊指向完整網址。
+ */
+export function linkText(url: string): string {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, '');
+    if (host) return `${host} ↗`;
+  } catch {
+    // 網址無效時不猜網域。
+  }
+  return '來源連結 ↗';
+}
+
+/**
  * 資料來源區塊。天格／單名外格「不計吉凶」只適用取名模式，
  * 分析模式不列這兩條，維持既有分析頁內容不變（SPEC-v3 #1）。
  */
@@ -135,7 +149,7 @@ export function sourcesSection(mode: 'analysis' | 'naming' = 'analysis'): string
     [
       '用神・月令旺相休囚死',
       `${WANGXIANG_SOURCE.book}。本站以日主五行在月令為「旺」或「相」即得令；` +
-        `得令另有臨官帝旺說、月支藏干說、分日司令說，分歧記於資料檔的 conflicts。`,
+        `得令另有臨官帝旺說、月支藏干說、分日司令說，各家分歧另有記錄，本站不擅自調和。`,
       WANGXIANG_SOURCE.url,
     ],
     [
@@ -184,7 +198,8 @@ export function sourcesSection(mode: 'analysis' | 'naming' = 'analysis'): string
             ([title, note, url]) => `
           <dt>${esc(title)}</dt>
           <dd>${esc(note)}</dd>
-          <dd><a href="${esc(url)}" target="_blank" rel="noreferrer noopener">${esc(url)}</a></dd>`,
+          <dd><a href="${esc(url)}" target="_blank" rel="noreferrer noopener"
+            aria-label="${esc(`${title}來源：${linkText(url).replace(' ↗', '')}（另開新視窗）`)}">${esc(linkText(url))}</a></dd>`,
           )
           .join('')}
       </dl>
