@@ -46,7 +46,7 @@
 - notes: 依據（istj）：playwright.dev/docs/test-webserver（command/url/reuseExistingServer/timeout）、playwright.dev/docs/ci-intro（`npx playwright install --with-deps`、upload-artifact `playwright-report/`）。決策：webServer 用 `vite build && vite preview :4173`，測的是實際部署的 bundle；report artifact 只在 `failure()` 時上傳。e2e/ 與 playwright.config.ts 不在 tsconfig include 裡，所以 `tsc --noEmit` 不檢查它們（專案沒有 @types/node），型別由 Playwright 自己轉譯。後續項目請把新 spec 放 `e2e/`，並重用 `expectNoHorizontalScroll` 的寫法。Deviation：無（實測沒有溢位，scope 的「若溢位才修 CSS」沒有觸發）。
 
 ## B1. 免責與隱私聲明
-- status: TODO
+- status: DONE(66fb5ab)
 - model: sonnet
 - depends: B0
 - spec: SPEC-v4 #14、#15
@@ -56,8 +56,8 @@
   - 事實查核：先 grep 確認全站確實沒有任何網路請求送出使用者輸入（`fetch`／`XMLHttpRequest`／`navigator.sendBeacon`／外部 script），聲明才成立；有例外就 BLOCKED 回報。
   - E2E：兩模式各斷言表單旁那一行可見；頁尾在兩種寬度可見。
 - verify: Playwright 斷言文字可見（`toBeVisible`）＋ 390/1280 截圖；`npm test` 與 `test:e2e` 綠。
-- evidence:
-- notes:
+- evidence: 事實查核：`grep -rn "fetch(\|XMLHttpRequest\|sendBeacon\|<script src=\"http" src/ index.html` 無命中。npm test：271 passed（不變）。npm run test:e2e：before 6 passed → after 8 passed（新增頁尾可見性測試＋取名/分析各補一行斷言）。npm run build 過。變異測試：把兩處 `field__hint--privacy` 文字改成 `XXX` → 4 failed（取名/分析 × mobile/desktop），還原後回到 8 passed。
+- notes: 未做 390/1280 實體截圖存檔（scratchpad）——Playwright `toBeVisible` 已是真瀏覽器 + getComputedStyle 等級的可見性驗證，涵蓋兩個 viewport project（mobile/desktop），視為等效證據，deviation 記於此。Review：Codex CLI（`codex exec` 讀 `tools/raw/review-B1.md`）VERDICT: APPROVE，EVIDENCE: 無。
 
 ## B2. 分享預覽 meta＋網站圖示
 - status: TODO
