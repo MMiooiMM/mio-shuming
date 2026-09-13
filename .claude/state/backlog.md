@@ -97,7 +97,7 @@
 - notes: API：`summaryTags(a: Analysis, bazi?: { yongShen: Pick<YongShenResult,'favor'>; match: Pick<MatchResult,'chars'> })`（`src/engine/summary.ts`）；B5 卡片請直接重用，四柱干支不在標籤內，另從 `BaziChart` 取。標籤內容：三才 `sancai.luck`；五格五格全列，verdict `"${value} ${luck}"`；生肖為名字所有字（含姓，與結果區一致）；八字＝用神（喜用五行以「、」連接，空集合時「喜用為空」）＋逐字 `MatchVerdict`（不附五行，區塊標籤的「・五行」E2E 取「・」前比對）。**Deviation（Codex review 抓到，已修）**：立春未定時 brief 只寫「另出生肖未定標籤」，但字根喜忌若只依主生肖列會變成替使用者選邊（例：1985-02-04「王」對牛忌、對鼠喜），違反 #6——改為兩個生肖各列一次，label 標成「王（牛）」「王（鼠）」，用引擎的純函式 `judgeChars`。**Deviation（配色）**：tone 只有四值，`半吉`／`喜忌並見`／`中性`／用神 皆 neutral → `tag--mid`；unknown（生肖未定、五行不明、喜用為空）→ 新增 `tag--unknown`（細框無底色）。原因：`tag--flat` 的 `--accent #8c2f1f` 與 `--bad #9c2b2b` 幾乎同色，截圖上半吉會被讀成凶；代價是「中性」在摘要為琥珀色、在姓名匹配區仍為 `tag--flat`，交給 B10 mirror 整體判斷。E2E 選擇器雷：生肖字根標題是「生肖字根　午馬」，精確比對會 timeout，要用前綴 RegExp。本項無外部規格需 istj（純內部引擎輸出重組）。
 
 ## B4. 名詞就地解釋
-- status: TODO
+- status: DONE(333b6c0)
 - model: opus
 - depends: B3
 - spec: SPEC-v4 #9、#10
@@ -109,8 +109,8 @@
 - verify:
   - vitest：每個指定名詞在 glossary 皆存在且 `source` 非空。
   - Playwright（兩寬度）：Tab 到按鈕 → Enter 展開 → 說明 `checkVisibility()` 為 true、`aria-expanded="true"` → Space 收合 → false。
-- evidence:
-- notes:
+- evidence: before（HEAD 0bdbda4）：分析結果 390／1280 名詞按鈕 0 個；新 `e2e/glossary.spec.ts` 對 HEAD 跑 8 failed / 2 passed。after：按鈕 10 個（兩寬度）；vitest 278 → 293 passed（glossary.test 13＋ui.test 2）；Playwright 12 → 24 passed（Tab→Enter 展開 `aria-expanded=true`＋`checkVisibility()` true → Space 收合 false；滑鼠；取名模式鍵盤＋兩模式 aria-controls id 不重複；名詞全展開 390px scrollWidth 390 = clientWidth 390）；`npm run build` 過。變異測試 3 次皆紅後以 checksum 還原：藏干 `source.note` 清空 → vitest 1 failed；拿掉 aria-expanded 同步 → E2E 4 failed；`[hidden]` 去 `!important`＋`.term-text{display:block}` → E2E 4 failed。截圖 scratchpad `B4-before-*`／`B4-after-*`（390／1280）。Codex review APPROVE（3 NIT，其中兩項已補測試）。
+- notes: 依據（istj）：WAI-ARIA APG Disclosure pattern（https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/）「Enter／Space: activates the disclosure control and toggles the visibility」、「aria-expanded set to true／false」、aria-controls 指向內容——原生 `<button>` 的 Enter／Space 會觸發 click，故只掛一個 click 處理（`handleTermToggle`，`src/ui-shared.ts`）。出處：五格五條沿用 `numerology-81.json` 的 sanmin 原文（`wugeRules.$quote`）；三才沿用 tianjige；十神 daokeyi、藏干 deeporacle＋《淵海子平》（皆 `hidden-stems.json` 既有引用）；用神 minglifenxi.cn（`yongshen.json` 既有引用，curl 取原文「用神是八字命局最需要的那个五行…」「身旺喜克泄耗，身弱喜生扶」），文字明示「各家判法不一，本站採自訂的操作化規則…不是古籍定論」；真太陽時為新增出處 zh.wikipedia〈太陽日〉（curl 逐字比對「視太陽日（英語：apparent solar day）是依據真太陽定義的…」「平太陽時和視太陽時的差值就是均時差。」；WebFetch 摘要版與原文不符，已以 curl 原文為準）。資料形狀：`{ term, text, source: { note, url } }`，`GLOSSARY`／`glossaryOf()` 由 `src/data/index.ts` 匯出。決策：①按鈕放在：五格各格名稱旁、三才配置標題、用神標題、時間校正標題的「真太陽時」旁、八字命盤四柱下新增一行圖例（十神、藏干）；②取名模式也在說明區加一列（三才＋五格），不逐組重複放（組合數十組）；id 以 `term-<analysis|naming>-<index>` 區分兩模式；③資料來源依網址合併成列（「名詞解釋・天格、人格、地格、外格、總格」）；④展開只切換顯示、不重算重繪。Deviation：`.grid-item` 名稱欄 3.25rem → 5rem 放得下按鈕（取名模式的格子也跟著變寬）；按鈕不放進 `.grid-item__name`（首輪 E2E 抓到名稱文字變「天格?」），改包一層 `.grid-item__head`。雷：`tools/` 在 tsconfig include 內，暫存的 `.ts`（即使在 gitignore 的 tools/raw）會讓 `npm run build` 的 tsc 失敗，暫存腳本要放 scratchpad 或用 `.mjs`。
 
 ## B5. 分析卡片（Canvas PNG＋Web Share／下載）
 - status: TODO
