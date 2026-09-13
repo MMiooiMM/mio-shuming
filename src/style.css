@@ -357,6 +357,19 @@ input[type='number']::-webkit-inner-spin-button {
   min-width: 0;
 }
 
+/* 分享卡片（SPEC-v4 #1、#5） */
+.summary__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.summary__actions .section__note:empty {
+  display: none;
+}
+
 .summary-tag {
   display: inline-flex;
   align-items: baseline;

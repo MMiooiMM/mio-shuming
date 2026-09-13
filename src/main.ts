@@ -15,6 +15,10 @@ import type { YongShenResult } from './bazi/yongshen.ts';
 import { correctBirthTime } from './bazi/time-correction.ts';
 import type { BirthPlaceInput, TimeCorrection } from './bazi/time-correction.ts';
 import type { LocalDateTime } from './bazi/pillars.ts';
+import { cardLayout, cardZodiacOf } from './card/layout.ts';
+import type { CardInput } from './card/layout.ts';
+import { canvasToPng, drawCard } from './card/draw.ts';
+import { shareOrDownload } from './card/share.ts';
 
 const form = document.querySelector<HTMLFormElement>('#form');
 const resultEl = document.querySelector<HTMLDivElement>('#result');
@@ -368,6 +372,10 @@ function summarySection(tags: SummaryTag[]): string {
           })
           .join('')}
       </dl>
+      <div class="summary__actions">
+        <button type="button" class="button button--inline" data-action="share-card">分享卡片</button>
+        <span class="section__note" role="status" data-card-status></span>
+      </div>
     </section>`;
 }
 
@@ -573,6 +581,8 @@ let currentFavor: Element[] = [];
 function runAndRender(run: Run): void {
   let baziHtml = '';
   let bazi: SummaryBazi | undefined;
+  let pillars: string[] | undefined;
+  lastCard = undefined;
   let zodiacTime: { hour: number; minute: number } | undefined;
   let correctedDate = run.date;
 
@@ -600,6 +610,7 @@ function runAndRender(run: Run): void {
     const nameChars = [...run.surname.trim(), ...run.givenName.trim()];
     const match = matchName(nameChars, ys.favor, ys.avoid, { strokes: run.candidateStrokes });
     bazi = { yongShen: ys, match };
+    pillars = chart.pillars.map((p) => p.pillar.name);
     baziHtml =
       correctionSection(corrected, run.place) +
       chartSection(chart, run.lateZiSwitchesDay) +
@@ -622,9 +633,44 @@ function runAndRender(run: Run): void {
     birth: { ...correctedDate, ...zodiacTime },
   });
 
-  resultEl!.innerHTML = result.ok
-    ? summarySection(summaryTags(result, bazi)) + baziHtml + render(result)
-    : renderError(result.reason);
+  if (!result.ok) {
+    resultEl!.innerHTML = renderError(result.reason);
+    return;
+  }
+  const tags = summaryTags(result, bazi);
+  // 卡片與摘要吃同一組標籤（SPEC-v4 #8）。生日印使用者輸入的年月日，時分與出生地不進卡片（#3）。
+  lastCard = {
+    name: result.surname + result.givenName,
+    birth: { year: run.date.year, month: run.date.month, day: run.date.day },
+    zodiac: cardZodiacOf(result.zodiac),
+    pillars,
+    tags,
+  };
+  resultEl!.innerHTML = summarySection(tags) + baziHtml + render(result);
+}
+
+/** 目前結果對應的卡片內容；結果重繪時一併更新。 */
+let lastCard: CardInput | undefined;
+
+/** 分享卡片（SPEC-v4 #1、#5）：必須在點擊處理中直接呼叫，Web Share 需要 user activation。 */
+async function shareCard(button: HTMLButtonElement): Promise<void> {
+  const card = lastCard;
+  if (!card || button.disabled) return;
+  const status = button.parentElement?.querySelector<HTMLElement>('[data-card-status]');
+  button.disabled = true;
+  try {
+    const blob = await canvasToPng(await drawCard(cardLayout(card)));
+    const file = new File([blob], 'mio-shuming-card.png', { type: 'image/png' });
+    const outcome = await shareOrDownload(file, '數名其妙・姓名分析卡片');
+    if (status) {
+      status.textContent =
+        outcome === 'downloaded' ? '此裝置不支援直接分享圖片，已改為下載 PNG。' : '';
+    }
+  } catch (err) {
+    if (status) status.textContent = err instanceof Error ? err.message : '卡片產生失敗。';
+  } finally {
+    button.disabled = false;
+  }
 }
 
 form.addEventListener('submit', (event) => {
@@ -722,7 +768,10 @@ resultEl.addEventListener('click', (event) => {
   if (handleTermToggle(event.target)) return;
   const target = event.target;
   if (!(target instanceof HTMLElement) || !lastRun) return;
-  if (target.closest('[data-action="toggle-late-zi"]')) {
+  const shareButton = target.closest<HTMLButtonElement>('[data-action="share-card"]');
+  if (shareButton) {
+    void shareCard(shareButton);
+  } else if (target.closest('[data-action="toggle-late-zi"]')) {
     lastRun = { ...lastRun, lateZiSwitchesDay: !lastRun.lateZiSwitchesDay };
     runAndRender(lastRun);
   } else if (target.closest('[data-action="toggle-dst"]')) {
