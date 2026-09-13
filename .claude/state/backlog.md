@@ -134,7 +134,7 @@
 - notes: istj 依據：W3C Web Share（https://w3c.github.io/web-share/）share()「If |global| does not have transient activation, return a promise rejected with a NotAllowedError」、canShare()「If the implementation does not support file sharing, return false」且 canShare 無 activation 要求；AbortError＝使用者取消或無分享目標。MDN Navigator.share：需 transient activation、secure context、`web-share` Permissions Policy；PNG 屬常見可分享類型。MDN toBlob：callback 可能收到 null、預設 image/png。API（B7 重用）：`shareOrDownload(file, title): Promise<'shared'|'cancelled'|'downloaded'>`、`downloadFile(file)`（`src/card/share.ts`）；`drawCard(layout)`／`canvasToPng(canvas)`（`src/card/draw.ts`，繪製與縮放重排都綁 `CardLayout`，B7 比較卡需另寫版面或擴充型別）；`cardLayout(input)`／`cardText(layout)`／`cardZodiacOf(z)`／`CARD_FOOTER`（`src/card/layout.ts`）。決策：①生日印使用者輸入的年月日（`run.date`），不是真太陽時校正後的日期——卡片「生日」是人填的那天；②share 只帶 `{ files, title }`（不帶 text/url，避免部分分享目標丟掉圖片）；③NotAllowedError 等非 AbortError 錯誤退回下載（例如繪製拖過 activation 期限），使用者仍拿得到圖；④檔名固定 `mio-shuming-card.png`，不含姓名；⑤按鈕放在摘要區底部（卡片內容即摘要），旁邊 `role="status"` 在退回下載時說明原因；⑥卡片色值寫死 `style.css` `:root` 淺色值（Canvas 讀 CSS 變數會吃到深色模式），tone 對應沿用摘要區（neutral→mid、unknown→細框）；⑦標籤過多時整體縮放 0.92^n 重排（最多 8 次），保證不壓到署名。Deviation：brief 的「版面模型型別層面不讓時分與地點進來」——TS 結構型別擋不住帶多餘屬性的變數，故另加執行期逐欄取值＋繞過型別的 vitest 守衛。E2E 的下載路徑以 `addInitScript` 移除 canShare/share 強制走退回（本機 Windows Chromium 可能原生支援 Web Share），真實裝置的系統分享選單未實機驗（stub 驗呼叫形狀），交 B10 或使用者手機實測。
 
 ## B6. 收藏資料加存預產期（向後相容）
-- status: TODO
+- status: DONE(e565a18)
 - model: sonnet
 - depends: B0
 - spec: SPEC-v4 #11
@@ -146,8 +146,8 @@
 - verify:
   - vitest：舊格式 `[{surname,givenName}]` 讀得到且 `due` 為 undefined；新格式往返一致；`due` 壞掉時該筆仍在。
   - Playwright：`addInitScript` 預寫舊格式 localStorage → 載入頁面 → 舊收藏顯示正常。
-- evidence:
-- notes:
+- evidence: npm test 299 → 304 passed（新增 `src/naming-favorites.test.ts` 5 項：舊格式讀取 due 為 undefined、新格式 due 往返一致、due 形狀壞掉（字串 year／缺欄位／null）時該筆仍在且其餘筆不受影響、整包 JSON 壞掉回空陣列、非陣列內容回空陣列）。npm run test:e2e 30 → 34 passed（新增 `e2e/favorites.spec.ts` 2 項：`addInitScript` 預寫舊格式 localStorage → 載入頁面 → 收藏顯示正常且 storage 內容未被動過；新收藏存入當下 due，換一個預產期選同一個名字再收藏一次 → storage 仍 1 筆、due 已更新為新值）。npm run build（tsc --noEmit＋vite build）過。變異測試（已還原）：`isValidDue` 改成永遠回 true → `naming-favorites.test.ts`「due 形狀壞掉時該筆仍在」1 failed；dedupe 判斷 `existing === -1` 改成 `true`（永遠 push）→ `e2e/favorites.spec.ts`「同名不同預產期更新」2 failed（storage 變 2 筆）。Codex CLI review（`tools/raw/review-B6.md`）VERDICT: APPROVE，EVIDENCE: none。
+- notes: 決策：①沿用 v1 key，不升版不寫遷移——`due` 是可選欄位，`JSON.parse` 舊資料後 `due` 天生 `undefined`，讀寫天然相容，無需一次性遷移腳本。②`isValidDue` 只驗證 `year/month/day` 是有限數字（`Number.isFinite`），不驗證合法日期範圍（如月份 1–12、日期依月份天數）——過寬鬆的壞資料不會被擋，但這是「壞掉的 due 當作不存在」判準之外的額外範圍檢查，SPEC/backlog 未要求；B7（`dueZodiac`）本身若拿到不合理數字自會回報未定，不在此收斂。③去重比對鍵為 `surname + givenName`：找到既有筆且 due 完全相同（含都是 undefined）則不寫入，避免無意義的 storage churn；找到但 due 不同則整筆覆寫（含 due）。④生肖顯示「未知」屬 UI 呈現，`favoritesSection` 目前不顯示生肖——SPEC #11 這段是為 B7 的比較視圖鋪路，B6 verify 清單只要求資料層（due 存得下、讀得回、壞掉不丟資料），未新增 UI 顯示，已在 review prompt 向 Codex 澄清此點，Codex 未提出異議。此為 istj 判斷：資料層 scope 與 UI 呈現 scope 分屬 B6／B7，B6 不做 UI 顯示變更。
 
 ## B7. 收藏比較＋比較卡片
 - status: TODO
