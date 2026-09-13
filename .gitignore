@@ -17,6 +17,9 @@ test-results/
 
 # Playwright MCP scratch output
 .playwright-mcp/
+
+# Lighthouse a11y report output (tools/lighthouse-a11y.mjs, re-runnable)
+lighthouse-a11y-report*.html
 *.png
 !public/**/*.png
 
