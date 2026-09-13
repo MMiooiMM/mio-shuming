@@ -11,6 +11,10 @@ dist/
 #     "https://www.post.gov.tw/post/download/1050812_%E8%A1%8C%E6%94%BF%E5%8D%80%E7%B6%93%E7%B7%AF%E5%BA%A6(toPost).xml"
 tools/raw/
 
+# Playwright E2E output
+playwright-report/
+test-results/
+
 # Playwright MCP scratch output
 .playwright-mcp/
 *.png
