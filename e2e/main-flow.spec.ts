@@ -136,6 +136,6 @@ test('頁尾免責與隱私聲明可見（SPEC-v4 #14）', async ({ page }) => {
   const footer = page.locator('.page__footer');
   await expect(footer).toBeVisible();
   await expect(footer.getByText('不會把姓名、生日等輸入送到任何伺服器')).toBeVisible();
-  await expect(footer.getByText('收藏名單只存在這台瀏覽器裡')).toBeVisible();
+  await expect(footer.getByText('收藏名單只存在這台裝置的瀏覽器')).toBeVisible();
   await expect(footer.getByText('命理結果僅供參考')).toBeVisible();
 });

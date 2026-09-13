@@ -203,7 +203,7 @@ function zodiacSection(z: DueZodiac, dueText: string): string {
       <ul class="notes">${z.animals.map(reasonRows).join('')}</ul>
       <p class="section__note">
         候選字另附<strong>逐字五行</strong>僅供參考；五行喜忌（用神）需出生時辰才能判定，
-        <strong>留待出生後</strong>在「分析名字」做八字分析（SPEC-v3 #8）。
+        <strong>留待出生後</strong>在「分析名字」做八字分析。
       </p>
     </section>`;
 }
@@ -276,7 +276,7 @@ function favoritesSection(favs: Favorite[], selected: ReadonlySet<string>): stri
     <section class="card" id="favorites-card">
       <h2 class="section__title">
         <span>收藏的候選名</span>
-        <span class="section__note">只存在此瀏覽器（localStorage），不上傳</span>
+        <span class="section__note">只存在這台裝置的瀏覽器，不上傳</span>
       </h2>
       <ul class="favorites">
         ${favs

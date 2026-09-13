@@ -172,7 +172,7 @@ const payload = {
     url: 'https://github.com/cjkvi/cjkvi-ids',
     ids: 'cjkvi-ids 的 ids.txt，源自 CHISE 專案（http://www.chise.org/）',
     license: 'GPLv2',
-    variantTable: '康熙部首變體對照（氵→水、艹→艸…）為人工維護，見 tools/gen-components.mjs',
+    variantTable: '康熙部首變體對照（氵→水、艹→艸…）為人工維護。',
   },
   encoding: 'entries 以 "," 分隔每個 codepoint；每個 entry 是連續的 2 位 base36 字根索引',
   radicals: universe,

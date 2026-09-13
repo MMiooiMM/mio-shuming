@@ -137,7 +137,7 @@ export function enumerateCombos(surname: string, doubleGiven: boolean): NamingRe
     tier: '次佳',
     relaxedNote:
       '此姓氏在此字數下沒有「三才吉＋計分格皆吉」的組合，' +
-      '以下退而列出「三才吉＋計分格無凶且至多一格半吉」的次佳組合（SPEC-v3 #5）。' +
+      '以下退而列出「三才吉＋計分格無凶且至多一格半吉」的次佳組合。' +
       (doubleGiven ? '' : '單名的計分格為人格、地格、總格三格。'),
     combos: nextBest,
   };

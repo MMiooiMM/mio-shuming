@@ -688,7 +688,7 @@ form.addEventListener('submit', (event) => {
   }
 
   if (!hourFilled) {
-    noBaziReason = '未填出生時間，因此不產出八字（SPEC-v2 #4）。以下僅為姓名分析。';
+    noBaziReason = '未填出生時間，因此不產出八字。以下僅為姓名分析。';
   } else if (countyValue === '') {
     noBaziReason = '未選出生地，無法把時鐘時間換算成真太陽時，因此不產出八字。以下僅為姓名分析。';
   } else {
