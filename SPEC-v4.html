@@ -157,6 +157,9 @@ td:first-child{white-space:nowrap;font-weight:600}
   <ol>
     <li value="32">模式分頁改為 segmented control：外框底 <code>#ECE8E2</code>、padding 4px、圓角 12px；選中項為 surface 底、accent 字、淡陰影；未選項為透明底、ink-soft 字（6.01:1）。深色模式另訂，對比 ≥ 4.5:1。保留 aria-pressed。</li>
     <li value="33"><strong>選中態通則</strong>：所有切換鈕的選中態一律實心 accent 配白字（8.26:1），不得使用任何語意色淡底。先套用到用神覆寫開關。</li>
+  </ol>
+  <div class="callout"><strong>2026-09-13 實作註記（B14，#33）：</strong>「白字」在深色模式改用 surface 色：深色 accent 是淺色的 #e2856f，配白字對比只有 2.68:1，沿用 .chip--on 前例後為 6.17:1；淺色模式仍是白字。同一條通則也套用到「?」名詞說明鈕的展開狀態，它原本也用 accent-soft 底。</div>
+  <ol>
     <li value="34">名詞說明框改用中性底 <code>#F3F1EC</code>（內文 15.02:1，深色模式另訂），保留左側 3px accent 線。</li>
     <li value="35">「分享卡片」與「輸出比較卡片」統一為<strong>次要</strong>（外框）。</li>
     <li value="36">畫面文字不得含內部文件路徑、內部欄位名（如「資料檔的 conflicts」）或 Markdown 語法；資料檔存純文字、UI 不做 Markdown 渲染。上游檔名與欄位名改用人話名稱；來源連結 href 不變，連結文字改為網域加 ↗。由腳本產生的資料檔依 #29 改生成腳本後重新產生。</li>
