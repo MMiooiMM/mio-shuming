@@ -60,7 +60,7 @@
 - notes: 未做 390/1280 實體截圖存檔（scratchpad）——Playwright `toBeVisible` 已是真瀏覽器 + getComputedStyle 等級的可見性驗證，涵蓋兩個 viewport project（mobile/desktop），視為等效證據，deviation 記於此。Review：Codex CLI（`codex exec` 讀 `tools/raw/review-B1.md`）VERDICT: APPROVE，EVIDENCE: 無。
 
 ## B2. 分享預覽 meta＋網站圖示
-- status: TODO
+- status: DONE(3e6d2bb)
 - model: sonnet
 - depends: B0
 - spec: SPEC-v4 #16
@@ -73,8 +73,8 @@
   - build 後 `dist/` 含 `og.png`、icon 檔，`dist/index.html` meta 正確（grep 輸出）。
   - 部署後 `curl -sI https://mmiooimm.github.io/mio-shuming/og.png` 為 200 且 `content-type: image/png`。
   - LINE／FB 預覽除錯工具實際抓取截圖——**需要使用者帳號登入時，標 `BLOCKED(需使用者以 FB Sharing Debugger 或 LINE Page Poker 實測)`，其餘部分照常 DONE 成另一個 commit**。
-- evidence:
-- notes:
+- evidence: npm test 271 passed（不變）；npm run test:e2e 8 passed（不變，本項未加新斷言）；npm run build 過，`dist/index.html` grep 確認 og:title/description/type/url/image(+width/height)/locale、twitter:card、icon/apple-touch-icon 全數存在；`dist/` 含 og.png、icon-32.png、icon-180.png、favicon.svg（與 public/ 一致，證明 Vite 原樣複製）。PNG IHDR 實讀：og.png=1200×630、icon-32.png=32×32、icon-180.png=180×180，三檔 PNG signature 正確。`git check-ignore -v public/*.png` 確認三檔不再被忽略（`git status` 顯示為可加入的 untracked，非靜默丟棄）。CI run 34733935781 成功（npm test → test:e2e → build → deploy）。部署後 `curl -sI https://mmiooimm.github.io/mio-shuming/og.png` → `HTTP/1.1 200 OK`、`Content-Type: image/png`、`Content-Length: 34245`。Codex CLI review（`tools/raw/review-B2.md`）VERDICT: APPROVE。
+- notes: istj 依據：ogp.me 明定必要屬性為 og:title/og:type/og:image/og:url（spec 本身未強制 og:image 用絕對網址，但其自身範例一律用絕對網址）；developers.facebook.com/docs/sharing/webmasters/images 建議 1200×630（1.91:1）、最小 200×200、上限 8MB。決策：og:url／og:image 寫死絕對網址（GitHub Pages 網域），因為爬蟲離開瀏覽器情境抓取 HTML，相對網址在該情境下的解析行為沒有規範保證；icon（favicon/apple-touch-icon）維持相對路徑（`./...`），沿用既有 `base:'./'` 慣例，交給瀏覽器自己解析。OG／icon 圖用 `tools/gen-og-image.mjs`（Playwright headless 截圖既有 devDependency `@playwright/test`，非新增 runtime 依賴）產生，可重製；favicon.svg 手刻，尺寸小不需要腳本。**待使用者實測**：LINE／FB 分享預覽除錯工具需要登入帳號抓取截圖，本 session 無法代做；其餘部分（meta 標籤、圖檔、CI 部署、200 curl）已完整驗證並 DONE，不算 BLOCKED。
 
 ## B3. 分項標籤函式＋結果摘要區
 - status: TODO
