@@ -5,6 +5,8 @@ import { initNaming } from './naming-ui.ts';
 import { analyse } from './engine/index.ts';
 import { matchName } from './engine/match.ts';
 import type { MatchResult, MatchVerdict } from './engine/match.ts';
+import { summaryTags } from './engine/summary.ts';
+import type { SummaryBazi, SummaryGroup, SummaryTag, SummaryTone } from './engine/summary.ts';
 import type { Analysis, CharVerdict, Element, Grid } from './engine/index.ts';
 import { baziChart } from './bazi/chart.ts';
 import type { BaziChart } from './bazi/chart.ts';
@@ -310,6 +312,49 @@ function matchSection(m: MatchResult, strokes: { min?: number; max?: number }): 
     </section>`;
 }
 
+const TONE_CLASS: Record<SummaryTone, string> = {
+  good: 'tag--good',
+  bad: 'tag--bad',
+  // --accent（tag--flat）與 --bad 色相幾乎相同，半吉會被讀成凶，所以中間值用 tag--mid；
+  // 資料不足（未定、五行不明、喜用為空）用細框無底色的 tag--unknown，不借用任何吉凶色。
+  neutral: 'tag--mid',
+  unknown: 'tag--unknown',
+};
+
+/**
+ * 結果摘要（SPEC-v4 #8）。**只呈現** `summaryTags()` 的輸出——卡片重用同一函式，
+ * 這裡不得另外判斷、計數或挑重點。
+ */
+function summarySection(tags: SummaryTag[]): string {
+  const groups: SummaryGroup[] = ['三才', '五格', '生肖', '八字'];
+  return `
+    <section class="card summary">
+      <h2 class="section__title">
+        <span>摘要</span>
+        <span class="section__note">各項獨立判定，不計數、不加總</span>
+      </h2>
+      <dl class="summary__groups">
+        ${groups
+          .map((group) => {
+            const items = tags.filter((t) => t.group === group);
+            if (!items.length) return '';
+            return `<div class="summary__group">
+              <dt class="summary__group-name">${esc(group)}</dt>
+              <dd class="summary__tags">${items
+                .map(
+                  (t) => `<span class="summary-tag" data-group="${esc(t.group)}" data-label="${esc(t.label)}">
+                    <span class="summary-tag__label">${esc(t.label)}</span>
+                    <span class="tag ${TONE_CLASS[t.tone]} summary-tag__verdict">${esc(t.verdict)}</span>
+                  </span>`,
+                )
+                .join('')}</dd>
+            </div>`;
+          })
+          .join('')}
+      </dl>
+    </section>`;
+}
+
 function noBaziNotice(reason: string): string {
   return `
     <section class="card">
@@ -509,6 +554,7 @@ let currentFavor: Element[] = [];
 
 function runAndRender(run: Run): void {
   let baziHtml = '';
+  let bazi: SummaryBazi | undefined;
   let zodiacTime: { hour: number; minute: number } | undefined;
   let correctedDate = run.date;
 
@@ -535,6 +581,7 @@ function runAndRender(run: Run): void {
     // 姓名匹配吃的是用神的結果，所以手動覆寫會讓它跟著重算（SPEC-v2 #15）。
     const nameChars = [...run.surname.trim(), ...run.givenName.trim()];
     const match = matchName(nameChars, ys.favor, ys.avoid, { strokes: run.candidateStrokes });
+    bazi = { yongShen: ys, match };
     baziHtml =
       correctionSection(corrected, run.place) +
       chartSection(chart, run.lateZiSwitchesDay) +
@@ -557,7 +604,9 @@ function runAndRender(run: Run): void {
     birth: { ...correctedDate, ...zodiacTime },
   });
 
-  resultEl!.innerHTML = result.ok ? baziHtml + render(result) : renderError(result.reason);
+  resultEl!.innerHTML = result.ok
+    ? summarySection(summaryTags(result, bazi)) + baziHtml + render(result)
+    : renderError(result.reason);
 }
 
 form.addEventListener('submit', (event) => {

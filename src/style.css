@@ -259,6 +259,43 @@ input[type='number']::-webkit-inner-spin-button {
 .tag--mid  { background: var(--mid-soft);  color: var(--mid); }
 .tag--bad  { background: var(--bad-soft);  color: var(--bad); }
 .tag--flat { background: var(--accent-soft); color: var(--accent); }
+.tag--unknown { background: transparent; color: var(--ink-soft); box-shadow: inset 0 0 0 1px var(--line); }
+
+/* 結果摘要（SPEC-v4 #8）：分組標籤並列，不計數。 */
+.summary__groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.summary__group {
+  display: grid;
+  grid-template-columns: 2.75rem 1fr;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.summary__group-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.summary__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  margin: 0;
+  min-width: 0;
+}
+
+.summary-tag {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  font-size: 0.875rem;
+}
 
 .strokes {
   display: flex;
