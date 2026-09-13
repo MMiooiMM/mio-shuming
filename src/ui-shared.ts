@@ -191,7 +191,8 @@ export function sourcesSection(mode: 'analysis' | 'naming' = 'analysis'): string
   ];
   return `
     <section class="card" id="sources">
-      <h2 class="section__title">資料來源</h2>
+      <details class="sources-toggle">
+      <summary><h2 class="section__title">資料來源（${rows.length} 項）</h2></summary>
       <dl class="sources">
         ${rows
           .map(
@@ -203,5 +204,6 @@ export function sourcesSection(mode: 'analysis' | 'naming' = 'analysis'): string
           )
           .join('')}
       </dl>
+      </details>
     </section>`;
 }

@@ -21,6 +21,7 @@ import {
   TONE_CLASS,
   esc,
   handleTermToggle,
+  linkText,
   luckClass,
   sourcesSection,
   termParts,
@@ -158,7 +159,9 @@ function introSection(r: NamingCombos): string {
         tian
           ? `<p class="section__note">天格 ${tian.value}（${esc(tian.fate.luck)}）由姓氏先天決定，
              取名無法改變——<strong>不計吉凶、只參與三才</strong>。
-             出處：${esc(NUMEROLOGY_SOURCE.tianGrid.url)}。</p>`
+             出處：<a href="${esc(NUMEROLOGY_SOURCE.tianGrid.url)}" target="_blank" rel="noreferrer noopener"
+               aria-label="天格不計吉凶來源：${esc(linkText(NUMEROLOGY_SOURCE.tianGrid.url).replace(' ↗', ''))}（另開新視窗）"
+               >${esc(linkText(NUMEROLOGY_SOURCE.tianGrid.url))}</a>。</p>`
           : ''
       }
       ${
@@ -531,11 +534,14 @@ export function initNaming(opts: NamingUiOptions): void {
     const zodiac = dueZodiac(year, month, day);
     if (!zodiac) {
       resultEl.innerHTML = renderError('預產期需為 1900–2100 之間的有效西元日期。');
+      // 出錯也捲到訊息，與分析模式一致（SPEC-v4 #45）。
+      resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
     const result = enumerateCombos(surname, double);
     if (!result.ok) {
       resultEl.innerHTML = renderError(result.reason);
+      resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
 

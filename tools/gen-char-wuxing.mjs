@@ -236,19 +236,19 @@ const out = {
     'chars 每個五行一條字串（字元即索引）；common 是 Big5 Level 1 常用字，供候選字過濾。',
   source: {
     wuxing: {
-      dataset: '開源漢字五行資料表（ben-hua/general_standard_chinese，2013 年《通用規範漢字表》8,105 筆）',
+      dataset: 'GitHub 上的開源漢字五行資料表（依 2013 年《通用規範漢字表》8,105 筆）',
       url: 'https://github.com/ben-hua/general_standard_chinese',
       license: 'Apache-2.0',
       caveat:
         '該資料的五行欄爬自百度漢語，來源未交代判定依據，實測不依部首（明＝水、口＝木、手＝金）。' +
-        '與另一份獨立資料集（zhenyangze/chinese-wuxing）對帳 6,205 字共同收錄、一致 6,194（99.8%），' +
+        '與另一份獨立的開源漢字五行資料集對帳 6,205 字共同收錄、一致 6,194（99.8%），' +
         '但那只證明它穩定，不證明它正確。本站將其定位為「網路主流通行版」，與 81 數理同級，非權威規則。',
       crossCheck: 'https://github.com/zhenyangze/chinese-wuxing',
       verifiedAt: '2026-08-10',
       selfTest: '五行疊字 5/5 通過：淼＝水、森＝木、焱＝火、垚＝土、鑫＝金。',
     },
     common: {
-      dataset: 'Big5 Level 1 常用字區 0xA440–0xC67E，由 Unicode 漢字資料庫（Unihan）的 Big5 對照欄位離線導出',
+      dataset: 'Big5 Level 1 常用字區，由 Unicode 漢字資料庫（Unihan）的 Big5 對照欄位離線導出',
       url: 'https://www.unicode.org/Public/UCD/latest/ucd/Unihan_OtherMappings.txt',
       caveat:
         '不等同教育部《常用國字標準字體表》（4,808 字）—— 後者遍尋不著機器可讀版本。' +

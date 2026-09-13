@@ -29,3 +29,16 @@ describe('sourcesSection 連結', () => {
     }
   });
 });
+
+// SPEC-v4 #40：資料來源預設收合，摘要列的項數由實際列數算出。
+describe('sourcesSection 收合', () => {
+  it.each(['analysis', 'naming'] as const)('%s 模式預設收合，摘要列項數等於列數', (mode) => {
+    const doc = new DOMParser().parseFromString(sourcesSection(mode), 'text/html');
+    const details = doc.querySelector<HTMLDetailsElement>('#sources details.sources-toggle')!;
+    expect(details).not.toBeNull();
+    expect(details.hasAttribute('open')).toBe(false);
+    const count = details.querySelectorAll('dl.sources > dt').length;
+    expect(count).toBeGreaterThan(0);
+    expect(details.querySelector('summary')!.textContent!.trim()).toBe(`資料來源（${count} 項）`);
+  });
+});

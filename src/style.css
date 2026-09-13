@@ -574,8 +574,25 @@ input[type='number']::-webkit-inner-spin-button {
   word-break: break-all;
 }
 
-.sources a {
+.sources a,
+.section__note a {
   color: var(--accent);
+}
+
+/* 資料來源預設收合（SPEC-v4 #40）：外框與摘要列沿用 .combo。
+   下方 .combo 共用規則的 margin-bottom 在後面，要靠 id 權重才蓋得掉。 */
+#sources .sources-toggle {
+  margin-bottom: 0;
+}
+
+.sources-toggle .section__title {
+  margin: 0;
+}
+
+.sources-toggle > .sources {
+  margin: 0;
+  padding: 0 0.7rem 0.8rem;
+  border-top: 1px solid var(--line);
 }
 
 .page__footer {
@@ -871,13 +888,15 @@ select:focus-visible {
 }
 
 /* 筆畫組合的摺疊列 */
-.combo {
+.combo,
+.sources-toggle {
   border: 1px solid var(--line);
   border-radius: 8px;
   margin-bottom: 0.5rem;
 }
 
-.combo > summary {
+.combo > summary,
+.sources-toggle > summary {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -886,7 +905,8 @@ select:focus-visible {
   cursor: pointer;
 }
 
-.combo > summary::-webkit-details-marker {
+.combo > summary::-webkit-details-marker,
+.sources-toggle > summary::-webkit-details-marker {
   display: none;
 }
 

@@ -12,6 +12,10 @@ const BANNED_PATTERNS: { category: string; pattern: RegExp }[] = [
   { category: 'Markdown 粗體', pattern: /\*\*[^*\n]+\*\*/g },
   { category: 'Unicode 欄位名', pattern: /\bk[A-Z][A-Za-z]+\b/g },
   { category: '內部欄位名', pattern: /\bconflicts\b/g },
+  // SPEC-v4 #43：網址只能待在連結 href 裡；owner/repo 兩段都要英文字母開頭，不誤中「5/1」這類日期。
+  { category: '裸網址', pattern: /https?:\/\/\S*/g },
+  { category: 'owner/repo', pattern: /\b[A-Za-z][\w.-]*\/[A-Za-z][\w.-]*\b/g },
+  { category: '0x 碼位', pattern: /\b0x[0-9A-Fa-f]{4,5}\b/g },
 ];
 
 const KEY = 'mio-shuming:favorites:v1';
@@ -25,6 +29,11 @@ function around(text: string, index: number, length: number): string {
 }
 
 async function assertNoDevJargon(page: Page, label: string): Promise<void> {
+  // SPEC-v4 #44：資料來源預設收合，收合的內容不在 innerText 裡。每個狀態都先全部展開，
+  // 否則只有「頁尾與資料來源」一個狀態看得到來源文字，取名模式專屬的來源列就沒人檢查。
+  await page.locator('details.sources-toggle').evaluateAll((els) => {
+    for (const el of els) (el as HTMLDetailsElement).open = true;
+  });
   const text = await page.locator('body').innerText();
   const hits: string[] = [];
   for (const word of BANNED) {
@@ -216,6 +225,8 @@ test('名詞說明全部展開不含開發者用語', async ({ page }) => {
 test('頁尾與資料來源區塊不含開發者用語', async ({ page }) => {
   await page.goto('./');
   await analyseWithTime(page);
-  await page.locator('#sources').scrollIntoViewIfNeeded();
+  // SPEC-v4 #44：資料來源預設收合，收合的內容不在 innerText 裡——不展開就等於沒檢查。
+  await page.locator('#sources summary').click();
+  await expect(page.locator('#sources details')).toHaveAttribute('open', '');
   await assertNoDevJargon(page, '頁尾與資料來源區塊');
 });
