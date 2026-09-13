@@ -171,6 +171,23 @@ td:first-child{white-space:nowrap;font-weight:600}
 </section>
 
 <section>
+  <h2>I. 資料來源收合與識別碼清除（2026-09-13 追加凍結）</h2>
+  <p class="note">來源：docs/design-review/2026-09-13-external-ui-critique-round3.md 第 4 節第 1、2 項與第 30 行；範圍由使用者裁決。</p>
+  <div class="callout"><strong>評審第 2 項「送出後結果不在第一屏」不成立：</strong>評審看的是整頁截圖，看不到捲動位置。實測兩個模式、390 與 1280 兩種寬度，成功送出後結果頂端都在視窗 0px。真正的缺口只有取名模式出錯時不捲動（#45）。</div>
+  <ol>
+    <li value="40">兩個模式的資料來源區塊改為 <code>&lt;details&gt;</code>，預設收合；摘要列「資料來源（N 項）」，N 由實際列數計算；摘要列沿用 .combo &gt; summary 樣式，不新增元件；展開後內容不刪減，本輪不做獨立來源頁。</li>
+    <li value="41">取名結果頂部卡片的「出處：https://…」改為與 #36 相同的網域加 ↗ 連結。</li>
+    <li value="42">畫面文字中的 repo 名（ben-hua/general_standard_chinese、zhenyangze/chinese-wuxing）、碼位 0xA440–0xC67E、CHISE 網址改寫為人話；依 #29 改生成腳本後重產，逐欄比對只有這些欄位變動。</li>
+    <li value="43">禁用字守衛新增三個類別規則：裸網址、owner/repo（兩段都以英文字母開頭）、0x 碼位；各做一次變異測試。</li>
+    <li value="44">「頁尾與資料來源」狀態先展開 details 再讀文字（收合內容不在 innerText 裡）；變異測試證明拿掉展開步驟就抓不到注入的違規字。</li>
+    <li value="45">取名模式出錯時（日期無效、姓氏查無）也捲到訊息，與分析模式一致。</li>
+    <li value="46">E2E 在 390 與 1280 斷言：兩個模式的成功與出錯，送出後結果頂端都在視窗內。</li>
+    <li value="47">vitest 與 E2E 全數通過；Lighthouse 三態無障礙 ≥ 95；390／1280 前後對照截圖；第四次 /mio-mirror。</li>
+  </ol>
+  <div class="callout"><strong>本輪不做：</strong>選中態改墨色、比較表裁切、送出後表單收成摘要列、chip 形狀統一、圖卡版式、「三才　三才」標籤重複。</div>
+</section>
+
+<section>
   <h2>沿用原則（v1–v3 全數繼承）</h2>
   <p class="note" style="font-size:.9375rem;color:var(--ink)">不合成單一總分；每條規則出處寫進資料檔 <code>source</code> 欄位並於「資料來源」呈現；流派衝突不擅自調和；引擎純函式；罕字與範圍外據實回報不猜；GPLv2。</p>
 </section>
@@ -205,6 +222,8 @@ td:first-child{white-space:nowrap;font-weight:600}
       <tr><td>UI 修正第二輪（09-13 追加）</td><td>修掉 G 節條文造成的殘留</td><td>資料來源收合＋說明限高；結果優先＋比較表裁切；先收工</td></tr>
       <tr><td>上游檔名（09-13 追加）</td><td>改人話名稱，檔名只留在連結</td><td>保留檔名，只清內部路徑</td></tr>
       <tr><td>匯出鈕層級（09-13 追加）</td><td>兩者都次要</td><td>兩者都主要</td></tr>
+      <tr><td>UI 修正第三輪（09-13 追加）</td><td>資料來源收合＋清識別碼＋出錯捲動</td><td>送出後表單收成摘要列（實測前提不成立）；只修錯誤捲動；選中態改墨色</td></tr>
+      <tr><td>來源收合深度（09-13 追加）</td><td>整區收合，內容不刪減</td><td>逐項降噪（每項只留一行摘要）；不收合</td></tr>
     </tbody>
   </table>
   </div>
