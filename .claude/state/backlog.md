@@ -398,7 +398,7 @@
   - 既有測試無依賴舊字串（ui.test.ts 的「不等同」仍在）。未改元件顏色。
 
 ## B16. 回歸＋第三次 mirror（主 agent）
-- status: TODO
+- status: DONE(docs/design-review/2026-09-13-external-ui-critique-round3.md)
 - model: main
 - depends: B15
 - spec: SPEC-v4 #39
@@ -408,5 +408,5 @@
   - 第三次 `/mio-mirror`，prompt 明標 BEFORE 與 AFTER，並列出本輪只改了哪幾件。
   - 結論與自評對照追加到 `docs/design-review/`。
 - verify: Lighthouse 數字、前後截圖、mirror 對照。
-- evidence:
-- notes:
+- evidence: Lighthouse 三態 95／96／96（不變）；CI 34755735858、34755839533、34755933722 皆 success；AFTER 截圖 docs/evidence/v4h-walkthrough/（本機）。第三輪 mirror：competent（中上），未跨級；五件事 ①②③④ 做到、⑤ 部分做到（取名結果頂部裸網址、repo 名、dataset 編號、0x 碼位、CHISE 內文網址仍在）。本輪新增問題：選中態實心磚紅與凶／忌同色相（用神覆寫木金水看起來像選了三個凶）、「?」展開態實心紅圓像警告徽章。
+- notes: 後續範圍待使用者裁決。評審前三建議：資料來源收合＋拿掉結果頂部裸網址；標題窄寬直式堆疊＋選中態改墨色＋「?」不用實心；送出後結果優先。
