@@ -180,7 +180,7 @@
 - notes: istj 依據：Lighthouse user-flows 官方文件（github.com/GoogleChrome/lighthouse/blob/main/docs/user-flows.md）——SPA 狀態互動後用 `flow.snapshot()` 稽核「當下 DOM」，不觸發導覽；自訂 `config` 需 `extends: 'lighthouse:default'` 否則報 `No artifacts were defined on the config`（踩過的坑，寫進腳本註解）。量測工具：`tools/lighthouse-a11y.mjs`（puppeteer 驅動、`onlyCategories:['accessibility']`），三態各自一次 navigate/timespan/snapshot，第三態（分析結果）用獨立分頁＋獨立 flow 避免跟取名狀態互相污染。Deviation：無，三態一次到位皆 ≥95，scope 預期的「常見缺失修復」步驟未觸發（B1–B7 先前已把無障礙基礎打好）。腳本非阻斷建議（Codex）已採納：`browser.close()` 包進 `try/finally`。不進 CI 閘門，依 SPEC 只需附報告數字。
 
 ## B9. 文件同步
-- status: TODO
+- status: DONE(1bb3b46)
 - model: sonnet
 - depends: B0–B8 全部 DONE
 - spec: Contract rule 4（doc-sync）
@@ -188,8 +188,8 @@
   - `README.md`：簡介補分享卡片、收藏比較；「開發」段補 `npm run test:e2e` 與實際測試數（實跑取數，不抄舊值——現行 README 寫 41 項已過期）；「已知限制」補 Web Share 不支援時退回下載、卡片不印時分／出生地的隱私設計。
   - 若實作偏離 SPEC-v4 任何條文，在 `SPEC-v4.md` 與 `SPEC-v4.html` 對應條目加「修正」callout（格式比照 SPEC-v3 #3），並在決策紀錄表補一列。
 - verify: `git diff` 審閱；README 內指令逐一實跑可用。
-- evidence:
-- notes:
+- evidence: `npm test` 14 files / 314 tests passed；`npm run test:e2e` 42 passed；`npm run build` 通過（tsc --noEmit + vite build）。
+- notes: 逐條核對 B1–B8 backlog notes 中標記「Deviation」的段落（B1 截圖等效證據、B2 LINE/FB 待實測、B3 生肖字根分列與 tag--unknown 配色、B5 版面型別 vs 執行期守衛、B7 勾滿 5 個 disable）against SPEC-v4.md #1–21：均為 brief／內部實作層級落差，未牴觸 SPEC-v4 條文字面，故**未**加「修正」callout（與 SPEC-v3 #3 那種直接違反凍結文字的情況不同）。README 三處新增：功能簡介（分享卡片＋收藏比較）、`npm run test:e2e` 指令與實跑測試數（314／42，取代過期的「41 項」）、已知限制補 Web Share 退回下載與卡片隱私（不印時分／出生地／預產期）。Review：Codex CLI（`codex exec` 讀 `tools/raw/review-B9.md`）VERDICT: REQUEST_CHANGES，但 EVIDENCE 只指出 B2 的 LINE/FB 預覽待使用者登入實測——這是 B2 既有、已記錄、且 orchestration 規則明示可接受的 pendingUserVerification 狀態，不是本項 README diff 的缺陷，也不在 B9 scope 內（B9 無法代使用者登入 LINE/FB 除錯工具）；其餘 3 點證據（測試數字、分享/隱私敘述、其他 Deviation 免 callout 的判斷）皆 APPROVE，故未回頭修改，逕行採納。
 
 ## B10. 整體設計評審（主 agent）
 - status: TODO
