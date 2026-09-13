@@ -150,7 +150,7 @@
 - notes: 決策：①沿用 v1 key，不升版不寫遷移——`due` 是可選欄位，`JSON.parse` 舊資料後 `due` 天生 `undefined`，讀寫天然相容，無需一次性遷移腳本。②`isValidDue` 只驗證 `year/month/day` 是有限數字（`Number.isFinite`），不驗證合法日期範圍（如月份 1–12、日期依月份天數）——過寬鬆的壞資料不會被擋，但這是「壞掉的 due 當作不存在」判準之外的額外範圍檢查，SPEC/backlog 未要求；B7（`dueZodiac`）本身若拿到不合理數字自會回報未定，不在此收斂。③去重比對鍵為 `surname + givenName`：找到既有筆且 due 完全相同（含都是 undefined）則不寫入，避免無意義的 storage churn；找到但 due 不同則整筆覆寫（含 due）。④生肖顯示「未知」屬 UI 呈現，`favoritesSection` 目前不顯示生肖——SPEC #11 這段是為 B7 的比較視圖鋪路，B6 verify 清單只要求資料層（due 存得下、讀得回、壞掉不丟資料），未新增 UI 顯示，已在 review prompt 向 Codex 澄清此點，Codex 未提出異議。此為 istj 判斷：資料層 scope 與 UI 呈現 scope 分屬 B6／B7，B6 不做 UI 顯示變更。
 
 ## B7. 收藏比較＋比較卡片
-- status: TODO
+- status: DONE(62cb86e)
 - model: opus
 - depends: B5、B6
 - spec: SPEC-v4 #12、#13
@@ -162,8 +162,8 @@
 - verify:
   - vitest：比較卡版面模型輸出不含任何日期字串（regex `/\d{4}[-/年]/` 不命中）；立春窗內含兩生肖；無 due 顯示未知。
   - Playwright（兩寬度）：勾 1 個比較鈕停用、勾 2 個啟用、勾 6 個被擋；比較視圖 390px 不溢位；比較卡下載為 PNG。
-- evidence:
-- notes:
+- evidence: before（HEAD de3c388）新 `e2e/compare.spec.ts` 8 failed（無勾選框）→ after 8 passed（勾 1 停用／2 啟用／滿 5 個第 6 個 disabled 且提示「最多比較 5 個」、取消一個後恢復；比較視圖 thead 5 名、無天格列、生肖列「馬」「蛇 或 馬」「生肖未知」「羊」、單名外格「不計」；下載 PNG signature＋寬 1080；Web Share stub 帶 image/png 不下載；網址不變）。test:e2e 34 → 42 passed；npm test 304 → 314 passed（`src/card/compare-layout.test.ts` 10 項：日期 regex `/\d{4}[-/年]/` 不命中且 JSON 無 due/year/2026、立春窗兩肖、無 due 未知、不存在日期當未知、罕字據實回報）；build OK。390px 比較視圖 scrollWidth 390 = clientWidth 390（表格容器 720 > 324 內捲），1280 為 1280/1280。5 名比較卡 PNG 1080×2341。變異測試（sha1 還原 OK）：忽略立春窗 → vitest 2 failed；卡片印 due → vitest 1 failed；拿掉 5 個上限 → E2E 2 failed。截圖 scratchpad `B7-after-favorites-*`、`B7-after-compare-*`（390／1280）、卡片 `B7-compare-card-5.png`。Codex review（`tools/raw/review-B7.md`）VERDICT: APPROVE，EVIDENCE: none。
+- notes: istj：重用 B5 已引用的 W3C Web Share／MDN（share 需 transient activation → 按鈕點擊中直接呼叫 `shareOrDownload`；AbortError 靜默），本項無新外部規格。API：`compareEntry(fav)`（`src/engine/compare.ts`，比較視圖與卡片唯一標籤來源，輸出不含 due）、`compareCardLayout(entries)`／`compareCardText`（`src/card/compare-layout.ts`）、`drawCompareCard(layout)`（`src/card/draw.ts`）。決策：①生肖字根標籤含姓（與 B3 摘要一致）；立春窗內依兩肖各列並標「字（生肖）」；無 due 或曆上不存在的 due → 「生肖未知」且不判字根。②比較視圖用 `<table>`（列＝項目、欄＝名字，列對齊好比較），包在 `.compare__scroll`（role=region、tabindex=0）內橫捲，列標題 sticky；單名外格列顯示「單名固定・不計」。③欄位順序照收藏清單，不依勾選先後或吉凶。④勾選只在記憶體；勾選變動或收藏增刪即關閉比較視圖，避免畫面與勾選不一致。⑤比較卡寬 1080、高 1350–2700 依內容加高，超過上限才縮字級（首版先封頂再縮，底部留大片空白，看圖發現後改成縮完再依內容定高）。⑥卡片檔名 `mio-shuming-compare.png`。⑦`TONE_CLASS` 從 main.ts 移到 ui-shared.ts 共用；draw.ts 抽出 groupsPass／paintFrame／paintFooter，B5 card.spec 6 項仍過。Deviation：brief 的「勾 6 個被擋」實作為滿 5 個時其餘勾選框 disabled（另有 change handler 保險擋第 6 個）。環境：B6 留下的 gitignored `tools/raw/b6-test.ts` 讓 `tsc` 失敗（已知雷），已移到 scratchpad `B7-env/`，未刪除。
 
 ## B8. Lighthouse 無障礙 ≥ 95
 - status: TODO
