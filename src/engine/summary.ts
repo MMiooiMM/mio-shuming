@@ -19,8 +19,11 @@ import type { YongShenResult } from '../bazi/yongshen.ts';
 
 export type SummaryGroup = '三才' | '五格' | '生肖' | '八字';
 
-/** 標籤語氣，只供上色；`unknown` ＝ 資料不足、據實不判。 */
-export type SummaryTone = 'good' | 'neutral' | 'bad' | 'unknown';
+/**
+ * 標籤語氣，只供上色：`mid` ＝ 半吉、喜忌並見（黃）；`neutral` ＝ 中性字、用神五行（灰，SPEC-v4 #25）；
+ * `unknown` ＝ 資料不足、據實不判。
+ */
+export type SummaryTone = 'good' | 'mid' | 'neutral' | 'bad' | 'unknown';
 
 export interface SummaryTag {
   group: SummaryGroup;
@@ -36,10 +39,10 @@ export interface SummaryBazi {
 }
 
 const luckTone = (luck: Luck): SummaryTone =>
-  luck === '吉' ? 'good' : luck === '凶' ? 'bad' : 'neutral';
+  luck === '吉' ? 'good' : luck === '凶' ? 'bad' : 'mid';
 
 const charTone = (v: CharVerdict['verdict']): SummaryTone =>
-  v === '喜' ? 'good' : v === '忌' ? 'bad' : 'neutral';
+  v === '喜' ? 'good' : v === '忌' ? 'bad' : v === '喜忌並見' ? 'mid' : 'neutral';
 
 const matchTone = (v: MatchVerdict): SummaryTone =>
   v === '補用神' ? 'good' : v === '傷用神' ? 'bad' : v === '中性' ? 'neutral' : 'unknown';

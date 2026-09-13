@@ -51,7 +51,7 @@ describe('summaryTags', () => {
       group: '三才',
       label: '三才',
       verdict: a.sancai.luck,
-      tone: a.sancai.luck === '吉' ? 'good' : a.sancai.luck === '凶' ? 'bad' : 'neutral',
+      tone: a.sancai.luck === '吉' ? 'good' : a.sancai.luck === '凶' ? 'bad' : 'mid',
     });
 
     const grids = tags.filter((t) => t.group === '五格');

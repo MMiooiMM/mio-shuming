@@ -71,9 +71,10 @@ export function handleTermToggle(target: EventTarget | null): boolean {
 export const TONE_CLASS: Record<SummaryTone, string> = {
   good: 'tag--good',
   bad: 'tag--bad',
-  // --accent（tag--flat）與 --bad 色相幾乎相同，半吉會被讀成凶，所以中間值用 tag--mid；
+  // 黃色只留給半吉與喜忌並見；中性字、用神五行用灰色（SPEC-v4 #25）。
   // 資料不足（未定、五行不明、喜用為空）用細框無底色的 tag--unknown，不借用任何吉凶色。
-  neutral: 'tag--mid',
+  mid: 'tag--mid',
+  neutral: 'tag--neutral',
   unknown: 'tag--unknown',
 };
 
@@ -85,7 +86,7 @@ export function verdictClass(v: CharVerdict['verdict']): string {
   if (v === '喜') return 'tag--good';
   if (v === '忌') return 'tag--bad';
   if (v === '喜忌並見') return 'tag--mid';
-  return 'tag--flat';
+  return 'tag--neutral';
 }
 
 /** 名詞解釋的出處，同一網址的名詞併成一列（五格五條都出自同一本書）。 */

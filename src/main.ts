@@ -80,7 +80,7 @@ function correctionSection(c: TimeCorrection, place: RunPlace): string {
         <span class="conversion__from">${esc(hhmm(c.clock))}</span>
         <span class="conversion__arrow">→</span>
         <span class="conversion__to">${esc(hhmm(c.trueSolar))}</span>
-        <span class="tag tag--flat">合計 ${esc(signedMinutes(c.totalMinutes))}</span>
+        <span class="tag tag--neutral">合計 ${esc(signedMinutes(c.totalMinutes))}</span>
       </p>
       ${
         c.dayShift !== 0
@@ -92,7 +92,7 @@ function correctionSection(c: TimeCorrection, place: RunPlace): string {
           ? `<p class="notice">出生日正好是夏令時間的起訖當日。${esc(DST_CAVEAT)}
               目前以<strong>${c.dstSkipped ? '未撥快（不減 1 小時）' : '已撥快（減 1 小時）'}</strong>計算，
               另一種假設會得到不同的命盤。
-              <button type="button" class="button button--inline" data-action="toggle-dst">
+              <button type="button" class="button button--inline button--secondary" data-action="toggle-dst">
                 改以${c.dstSkipped ? '已撥快' : '未撥快'}重算
               </button>
             </p>`
@@ -178,7 +178,7 @@ function chartSection(chart: BaziChart, lateZiSwitchesDay: boolean): string {
               出生於 23:00–23:59（早子時）。目前採
               <strong>${lateZiSwitchesDay ? '子初換日：日柱算隔天' : '夜子時：日柱仍算當天'}</strong>；
               另一派會得到不同的日柱與時干。
-              <button type="button" class="button button--inline" data-action="toggle-late-zi">
+              <button type="button" class="button button--inline button--secondary" data-action="toggle-late-zi">
                 改用${lateZiSwitchesDay ? '夜子時' : '子初換日'}重算
               </button>
             </p>`
@@ -202,7 +202,7 @@ function yongShenSection(y: YongShenResult): string {
 
       <p class="conversion">
         <span>日主 <strong>${esc(y.dayMaster.stem)}（${esc(y.dayMaster.element)}）</strong></span>
-        <span class="tag ${y.strength.strong ? 'tag--bad' : 'tag--mid'}">
+        <span class="tag tag--neutral">
           ${y.strength.strong ? '身強' : '身弱'}
         </span>
         <span class="section__note">
@@ -250,12 +250,12 @@ function yongShenSection(y: YongShenResult): string {
         <div class="override__buttons">
           ${ELEMENTS.map(
             (e) => `<button type="button"
-              class="button button--inline ${y.favor.includes(e) ? 'button--on' : ''}"
+              class="button button--inline button--toggle ${y.favor.includes(e) ? 'button--on' : ''}"
               data-action="toggle-favor" data-element="${esc(e)}">${esc(e)}</button>`,
           ).join('')}
           ${
             y.overridden
-              ? '<button type="button" class="button button--inline" data-action="reset-favor">恢復本站判定</button>'
+              ? '<button type="button" class="button button--inline button--secondary" data-action="reset-favor">恢復本站判定</button>'
               : ''
           }
         </div>
@@ -265,7 +265,8 @@ function yongShenSection(y: YongShenResult): string {
 
 function matchSection(m: MatchResult, strokes: { min?: number; max?: number }): string {
   const verdictTag = (v: MatchVerdict) =>
-    v === '補用神' ? 'tag--good' : v === '傷用神' ? 'tag--bad' : v === '中性' ? 'tag--flat' : 'tag--mid';
+    // 五行不明＝資料不足，與摘要的 unknown 同樣式；黃色只留給半吉與喜忌並見（SPEC-v4 #25）。
+    v === '補用神' ? 'tag--good' : v === '傷用神' ? 'tag--bad' : v === '中性' ? 'tag--neutral' : 'tag--unknown';
 
   return `
     <section class="card">

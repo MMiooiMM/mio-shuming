@@ -12,7 +12,7 @@ import {
   zodiacReasons,
 } from './engine/naming.ts';
 import type { DueZodiac, NamingCandidate, NamingCombos, StrokeCombo } from './engine/naming.ts';
-import { compareEntry } from './engine/compare.ts';
+import { ZODIAC_UNKNOWN, compareEntry } from './engine/compare.ts';
 import type { CompareEntry } from './engine/compare.ts';
 import { compareCardLayout } from './card/compare-layout.ts';
 import { canvasToPng, drawCompareCard } from './card/draw.ts';
@@ -99,7 +99,7 @@ function gridItem(g: Grid, skipLabel: string | undefined): string {
       <span class="grid-item__value"><b>${g.value}</b>${esc(g.element)}</span>
       ${
         skipLabel
-          ? `<span class="tag tag--flat">${esc(skipLabel)}</span>`
+          ? `<span class="tag tag--neutral">${esc(skipLabel)}</span>`
           : `<span class="tag ${luckClass(g.fate.luck)}">${esc(g.fate.luck)}・${esc(g.fate.title)}</span>`
       }
       <span class="grid-item__detail">${esc(g.formula)}　—　${esc(g.fate.text)}</span>
@@ -256,7 +256,7 @@ function comboBody(c: StrokeCombo, double: boolean, animals: Animal[]): string {
       目前搭配：<b class="compose__surname"></b>${c.given
         .map((_, i) => `<b class="compose__slot" data-slot="${i}">？</b>`)
         .join('')}
-      <button type="button" class="button button--inline" data-action="save-fav" data-key="${esc(key)}" disabled>
+      <button type="button" class="button button--inline button--secondary" data-action="save-fav" data-key="${esc(key)}" disabled>
         收藏這個名字
       </button>
     </p>`;
@@ -287,10 +287,10 @@ function favoritesSection(favs: Favorite[], selected: ReadonlySet<string>): stri
                   aria-label="比較 ${esc(f.surname)}${esc(f.givenName)}"${selected.has(favoriteKey(f)) ? ' checked' : ''}>
                 <span class="favorite__name">${esc(f.surname)}${esc(f.givenName)}</span>
               </label>
-              <button type="button" class="button button--inline" data-action="fav-analyse" data-i="${i}">
+              <button type="button" class="button button--inline button--secondary" data-action="fav-analyse" data-i="${i}">
                 帶入完整分析
               </button>
-              <button type="button" class="button button--inline" data-action="fav-remove" data-i="${i}">
+              <button type="button" class="button button--inline button--text" data-action="fav-remove" data-i="${i}">
                 移除
               </button>
             </li>`,
@@ -336,17 +336,25 @@ function compareSection(entries: CompareEntry[]): string {
           cell(e, (o) => {
             const t = o.tags.find((x) => x.group === '五格' && x.label === n);
             // 單名外格不含名字筆畫，取名改變不了——不計吉凶（SPEC-v3 #3）。
-            return t ? tagSpan(t.verdict, t.tone) : '<span class="tag tag--flat">單名固定・不計</span>';
+            return t ? tagSpan(t.verdict, t.tone) : '<span class="tag tag--neutral">單名固定・不計</span>';
           }),
         )
         .join('')}</tr>`,
     ),
-    `<tr><th scope="row">生肖</th>${entries.map((e) => cell(e, (o) => esc(o.zodiacText))).join('')}</tr>`,
+    `<tr><th scope="row">生肖</th>${entries
+      .map((e) =>
+        cell(e, (o) =>
+          o.zodiacText === ZODIAC_UNKNOWN
+            ? `<span class="tag tag--neutral">${esc(ZODIAC_UNKNOWN)}</span>`
+            : esc(o.zodiacText),
+        ),
+      )
+      .join('')}</tr>`,
     `<tr><th scope="row">生肖喜忌</th>${entries
       .map((e) =>
         cell(e, (o) => {
           const chars = o.tags.filter((t) => t.group === '生肖');
-          if (!chars.length) return '<span class="tag tag--unknown">無預產期，不判</span>';
+          if (!chars.length) return '<span class="tag tag--neutral">無預產期，不判</span>';
           return `<div class="compare__chars">${chars
             .map(
               (t) => `<span class="summary-tag"><span class="summary-tag__label">${esc(t.label)}</span>${tagSpan(
@@ -380,7 +388,7 @@ function compareSection(entries: CompareEntry[]): string {
         </table>
       </div>
       <div class="summary__actions">
-        <button type="button" class="button button--inline" data-action="compare-card">輸出比較卡片</button>
+        <button type="button" class="button button--inline button--secondary" data-action="compare-card">輸出比較卡片</button>
         <span class="section__note" role="status" data-compare-card-status></span>
       </div>
     </section>`;

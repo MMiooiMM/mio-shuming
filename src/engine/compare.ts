@@ -49,10 +49,10 @@ export type CompareEntry = CompareEntryOk | CompareEntryError;
 export const ZODIAC_UNKNOWN = '生肖未知';
 
 const luckTone = (luck: Luck): SummaryTone =>
-  luck === '吉' ? 'good' : luck === '凶' ? 'bad' : 'neutral';
+  luck === '吉' ? 'good' : luck === '凶' ? 'bad' : 'mid';
 
 const charTone = (v: CharVerdict['verdict']): SummaryTone =>
-  v === '喜' ? 'good' : v === '忌' ? 'bad' : 'neutral';
+  v === '喜' ? 'good' : v === '忌' ? 'bad' : v === '喜忌並見' ? 'mid' : 'neutral';
 
 export function compareEntry(fav: CompareSource): CompareEntry {
   const surname = [...fav.surname.trim()];

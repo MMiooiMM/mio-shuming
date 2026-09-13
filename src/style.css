@@ -12,6 +12,9 @@
   --mid-soft: #f6efdc;
   --bad: #9c2b2b;
   --bad-soft: #f7e4e4;
+  /* 中性灰（SPEC-v4 #25）：中性、不計、生肖未知、用神五行。#6b645a on #eeebe6 = 4.91:1。 */
+  --neutral: #6b645a;
+  --neutral-soft: #eeebe6;
   --radius: 12px;
   --gap: 1rem;
 }
@@ -32,6 +35,9 @@
     --mid-soft: #322a1a;
     --bad: #ef9494;
     --bad-soft: #331f1f;
+    /* #bdb5ab on #2e2a26 = 7.02:1 */
+    --neutral: #bdb5ab;
+    --neutral-soft: #2e2a26;
   }
 }
 
@@ -172,6 +178,12 @@ input:focus-visible {
   outline-offset: 1px;
 }
 
+/* radio 與 checkbox 跟站色一致，不用瀏覽器預設藍（SPEC-v4 #24）。 */
+input[type='radio'],
+input[type='checkbox'] {
+  accent-color: var(--accent);
+}
+
 /* Number inputs are for 年/月/日 only; the spinners just add clutter. */
 input[type='number'] {
   -moz-appearance: textfield;
@@ -206,6 +218,27 @@ input[type='number']::-webkit-inner-spin-button {
 .button:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
+}
+
+/*
+  三級按鈕（SPEC-v4 #22）：`.button` 本身是主要（實心 --accent）；
+  次要為白底加 accent 框；文字鈕無底色，hover 才加底線。
+*/
+.button--secondary {
+  color: var(--accent);
+  background: var(--surface);
+  border: 1.5px solid var(--accent);
+}
+
+.button--text {
+  color: var(--ink-soft);
+  background: transparent;
+  border: 0;
+}
+
+.button--text:hover {
+  filter: none;
+  text-decoration: underline;
 }
 
 /* --- results ------------------------------------------------------------- */
@@ -258,7 +291,8 @@ input[type='number']::-webkit-inner-spin-button {
 .tag--good { background: var(--good-soft); color: var(--good); }
 .tag--mid  { background: var(--mid-soft);  color: var(--mid); }
 .tag--bad  { background: var(--bad-soft);  color: var(--bad); }
-.tag--flat { background: var(--accent-soft); color: var(--accent); }
+/* 黃色（mid）只留給半吉與喜忌並見；中性、不計、生肖未知一律灰（SPEC-v4 #25）。 */
+.tag--neutral { background: var(--neutral-soft); color: var(--neutral); }
 .tag--unknown { background: transparent; color: var(--ink-soft); box-shadow: inset 0 0 0 1px var(--line); }
 
 /* 名詞就地解釋（SPEC-v4 #9）：名詞旁的小圓鈕，點開下方說明。 */
@@ -698,12 +732,19 @@ select:focus-visible {
   flex: 0 0 5rem;
 }
 
+/* 小按鈕：高 36px、左右 14px、圓角 8px（SPEC-v4 #22）。 */
 .button--inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: auto;
+  height: 36px;
   margin-top: 0.5rem;
-  padding: 0.35rem 0.75rem;
+  padding: 0 14px;
   font-size: 0.8125rem;
   letter-spacing: 0.04em;
+  border-radius: 8px;
+  white-space: nowrap;
 }
 
 /* 用神的手動覆寫（SPEC-v2 #15） */
@@ -722,19 +763,23 @@ select:focus-visible {
   gap: 0.4rem;
 }
 
-/* 未選中的五行按鈕做成外框樣式，才看得出哪些現在是喜用。 */
 .override__buttons .button {
   margin-top: 0;
   min-width: 3rem;
+}
+
+/* 未選中的五行按鈕做成外框樣式，才看得出哪些現在是喜用。
+   選中不用綠色——綠色是「吉」的語意色（SPEC-v4 #23）。 */
+.button--toggle {
   color: var(--ink-soft);
   background: transparent;
   border: 1px solid var(--line);
 }
 
-.override__buttons .button--on {
-  color: #fff;
-  background: var(--good);
-  border-color: var(--good);
+.button--toggle.button--on {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: var(--accent);
 }
 
 /* 依用神推薦的候選字 */
@@ -871,9 +916,17 @@ select:focus-visible {
   opacity: 0.75;
 }
 
-.chip--on {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+/* 中性字白底細框（SPEC-v4 #26）；喜／忌沿用 tag--good／tag--bad 的綠紅。 */
+.chip.tag--neutral {
+  color: var(--ink);
+  background: var(--surface);
+}
+
+/* 選中為實心 accent；字用 --surface，深色模式下才不會變成淺字配淺底。 */
+.chip.chip--on {
+  color: var(--surface);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .chip:focus-visible {

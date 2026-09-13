@@ -21,17 +21,20 @@ const COLOR = {
   midSoft: '#f6efdc',
   bad: '#9c2b2b',
   badSoft: '#f7e4e4',
+  neutral: '#6b645a',
+  neutralSoft: '#eeebe6',
 } as const;
 
 /** 與 src/style.css `body` 同一組 font stack。 */
 const FONT_STACK =
   "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif";
 
-/** 與摘要區 TONE_CLASS 同一套對應：neutral 用 mid（accent 與 bad 幾乎同色），unknown 只有細框。 */
-const TONE: Record<SummaryTone, { fill?: string; stroke?: string; text: string }> = {
+/** 與摘要區 TONE_CLASS 同一套對應：neutral 用中性灰（SPEC-v4 #27，與 --neutral token 同值），unknown 只有細框。 */
+export const CARD_TONE: Readonly<Record<SummaryTone, { fill?: string; stroke?: string; text: string }>> = {
   good: { fill: COLOR.goodSoft, text: COLOR.good },
   bad: { fill: COLOR.badSoft, text: COLOR.bad },
-  neutral: { fill: COLOR.midSoft, text: COLOR.mid },
+  mid: { fill: COLOR.midSoft, text: COLOR.mid },
+  neutral: { fill: COLOR.neutralSoft, text: COLOR.neutral },
   unknown: { stroke: COLOR.line, text: COLOR.inkSoft },
 };
 
@@ -204,7 +207,7 @@ function paintTag(ctx: CanvasRenderingContext2D, t: CardTag, x: number, top: num
   const verdictW = ctx.measureText(t.verdict).width;
   const px = x + labelW + 12 * s;
   const pw = verdictW + 36 * s;
-  const tone = TONE[t.tone];
+  const tone = CARD_TONE[t.tone];
   roundRect(ctx, px, top, pw, h, 10 * s);
   if (tone.fill) {
     ctx.fillStyle = tone.fill;
