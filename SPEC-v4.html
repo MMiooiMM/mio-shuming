@@ -131,6 +131,24 @@ td:first-child{white-space:nowrap;font-weight:600}
 </section>
 
 <section>
+  <h2>G. UI 收斂第一輪（2026-09-13 追加凍結）</h2>
+  <p class="note">來源：docs/design-review/2026-09-13-external-ui-critique.md「只能改三件事」第 1 項；範圍由使用者裁決。改動前截圖：docs/evidence/v4-walkthrough/（HEAD 7c39bf2）。</p>
+  <ol>
+    <li value="22">三級按鈕：<strong>主要</strong>實心 accent；<strong>次要</strong> surface 底、1.5px accent 框、accent 字；<strong>文字</strong>無底色、ink-soft 字、hover 加底線。小按鈕統一高 36px、左右 padding 14px、圓角 8px。</li>
+    <li value="23">按鈕分配：<strong>主要</strong>為列出吉筆畫組合、開始分析、比較勾選的名字、分享卡片；<strong>次要</strong>為帶入完整分析、收藏這個名字、輸出比較卡片；<strong>文字</strong>為移除。用神覆寫切換鈕不再用綠色，選中狀態改用 accent-soft 底。模式切換大卡不動。</li>
+    <li value="24">radio 與 checkbox 使用 <code>accent-color: var(--accent)</code>。</li>
+    <li value="25">新增中性灰 token：淺色模式底 <code>#EEEBE6</code>、字 <code>#6B645A</code>（對比 4.91:1）；深色模式另訂，對比須 ≥ 4.5:1。「中性」「不計」「生肖未知」與用神五行標籤改用灰色；黃色只留給<strong>半吉</strong>與<strong>喜忌並見</strong>。</li>
+    <li value="26">候選字 chip：中性字白底加 1px line 框、ink 字；喜字維持綠、忌字維持紅；選中為實心 accent。</li>
+    <li value="27">兩張分享圖卡的中性色改為同一個灰；版式與 chip 形狀不動。</li>
+    <li value="28">兩模式所有結果狀態、名詞說明全部展開、收藏與比較視圖、頁尾、資料來源區塊的畫面文字（<code>innerText</code>），不得含 <code>SPEC</code>、<code>localStorage</code>、<code>curl</code>、<code>kTotalStrokes</code>、<code>kRSUnicode</code>、<code>$comment</code>、<code>tools/</code>、<code>src/</code>。「localStorage」改寫為「只存在這台裝置的瀏覽器」；Unicode／Unihan 等引用來源名稱保留。</li>
+    <li value="29">人工整理的資料檔直接改寫出處備註的措辭：原文引文一字不改，只改描述查證方式的開發者用語。由腳本產生的資料檔，改生成腳本後重新產生，不手改。</li>
+    <li value="30">新增 Playwright 守衛：走完 #28 列的所有狀態後讀取 innerText，斷言不含上述字詞。須做變異測試：放回一個禁用字，測試要紅。</li>
+    <li value="31">既有 vitest 與 E2E 全數通過；Lighthouse 三態無障礙分數仍 ≥ 95；以 mirror-shots 拍 390／1280 前後對照截圖，並再跑一次 /mio-mirror。</li>
+  </ol>
+  <div class="callout"><strong>本輪不做：</strong>結果優先與降噪、手機排版破損、網頁與圖卡 chip 形狀統一、圖卡版式。</div>
+</section>
+
+<section>
   <h2>沿用原則（v1–v3 全數繼承）</h2>
   <p class="note" style="font-size:.9375rem;color:var(--ink)">不合成單一總分；每條規則出處寫進資料檔 <code>source</code> 欄位並於「資料來源」呈現；流派衝突不擅自調和；引擎純函式；罕字與範圍外據實回報不猜；GPLv2。</p>
 </section>
@@ -159,6 +177,9 @@ td:first-child{white-space:nowrap;font-weight:600}
       <tr><td>名詞解釋</td><td>就地點開說明</td><td>獨立名詞區塊</td></tr>
       <tr><td>卡片署名</td><td>站名＋網址＋僅供參考</td><td>只印僅供參考</td></tr>
       <tr><td>比較卡個資</td><td>只印生肖、不印預產期</td><td>印預產期＋生肖</td></tr>
+      <tr><td>UI 修正第一輪（09-13 追加）</td><td>按鈕分級＋語意色＋拿掉開發者用語</td><td>結果優先＋降噪；手機排版破損；先收工</td></tr>
+      <tr><td>圖卡範圍（09-13 追加）</td><td>只跟著改語意色</td><td>統一 chip 形狀；完全不動</td></tr>
+      <tr><td>出處備註（09-13 追加）</td><td>改資料檔措辭</td><td>UI 渲染時過濾</td></tr>
     </tbody>
   </table>
   </div>

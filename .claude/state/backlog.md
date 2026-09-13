@@ -200,3 +200,96 @@
 - verify: mirror 報告＋對照表；後續項目清單。
 - evidence: 截圖 10 張（390/1280 × 首頁、取名結果、分析結果、比較＋兩張圖卡）；opus 只看截圖評審：competent 下緣；前三改善＝按鈕三級＋語意色歸位、結果優先＋降噪（含移除 UI 中 SPEC 編號／localStorage 等用語）、手機排版破損。自評對照已落檔。
 - notes: 後續 UI 修正待使用者裁決範圍後開 B11+。另：CI 自 B8（dac5602）起 npm ci 失敗，主 agent 以 7c39bf2 修復鎖檔，CI run 34737756989 build+deploy success；Lighthouse 抽驗 95/96/96 與 B8 一致。
+
+---
+
+# 第二波 — UI 收斂第一輪（SPEC-v4 G 節 #22–#31，2026-09-13 追加凍結）
+
+> 來源：`docs/design-review/2026-09-13-external-ui-critique.md` 的 ④⑤ 與開發者用語盲點。改動前截圖：`docs/evidence/v4-walkthrough/`（HEAD `7c39bf2`，被 gitignore，只在本機）。
+> 依序跑 `/mio-boom --seq`：B11 → B12；B13 由主 agent 做。
+
+## B11. 按鈕三級＋語意色歸位＋圖卡中性色
+- status: TODO
+- model: opus
+- depends: B10
+- spec: SPEC-v4 #22–#27
+- scope:
+  - `src/style.css`：新增 `--neutral`／`--neutral-soft`，淺色模式分別為 `#6B645A`／`#EEEBE6`；深色模式在 `@media (prefers-color-scheme: dark)` 內另訂，先算對比 ≥ 4.5:1 再寫。
+  - 新增 `.tag--neutral`，並檢查 `.tag--flat` 的現有用途。
+  - 按鈕：`.button` 分出 primary（現行實心）、`.button--secondary`、`.button--text` 三種修飾類。小按鈕（現行 `.button--inline`）統一高 36px、padding 0 14px、圓角 8px。依 #23 逐一套到按鈕上；用神覆寫切換鈕（`main.ts` 裡的 `button--on`）選中時改用 `--accent-soft` 底、`--accent` 字，不再出現綠色。
+  - radio／checkbox 用 `accent-color: var(--accent)`，要涵蓋取名表單的單雙名 radio。
+  - 語意色：
+    - `src/ui-shared.ts` 的 `verdictClass` 把「中性」由 `tag--flat` 改為 `tag--neutral`。
+    - `src/engine/summary.ts` 的 `SummaryTone`：確認 `neutral` 用在哪些標籤（用神五行、中性字），網頁摘要與圖卡的 neutral 都改成灰。
+    - 「不計」（天格、單名外格，在 `naming-ui.ts` 的 `gridItem` skipLabel 與比較視圖）、「生肖未知」一律改灰。
+    - 黃色只留給半吉與喜忌並見。
+  - 候選字 chip（`.chip`）：中性字用 `--surface` 底、1px `--line` 框、`--ink` 字；喜字綠、忌字紅；`.chip--on` 為實心 `--accent`。
+  - 圖卡：`src/card/draw.ts` 的 `TONE.neutral` 改用灰色色值（`COLOR` 常數新增 neutral 兩色，與 CSS token 同值）。**版式與 chip 形狀一律不動**（#27）。
+  - 開工前 grep 整個 `src/` 裡的 `tag--flat`、`tag--mid`、`button--inline`、`button--on`，逐一列清單再改，避免漏掉某個畫面。
+- verify:
+  - before：`node tools/raw/mirror-shots.mjs <scratchpad>/B11-before`（要先起 `vite preview :4173`；腳本 gitignore，找不到就依 `docs/evidence/v4-walkthrough/` 的畫面清單重寫一份）。
+  - after：同一支腳本拍到 `<scratchpad>/B11-after`。
+  - Playwright 新增 `e2e/visual-tokens.spec.ts`，兩個寬度都跑，用 `getComputedStyle` 斷言：
+    - 「移除」按鈕背景透明；「帶入完整分析」背景是 surface 色、邊框是 accent 色；「比較勾選的名字」背景是 accent 色。
+    - 一個中性候選字 chip 背景是 surface 色；天格「不計」標籤背景是 `rgb(238, 235, 230)`。
+    - 單雙名 radio 的 `accent-color` 非 auto。
+    - 分析結果頁任何按鈕的背景都不是綠色系（good 色）。
+  - vitest：圖卡的 tone 對照表中 neutral 用灰色值（純資料，可測）。
+  - 深色模式：用 Playwright `colorScheme: 'dark'` 量灰色 chip 的對比（程式算，≥ 4.5）。
+  - 變異測試：把 `verdictClass` 的中性改回 `tag--flat`，visual-tokens spec 要紅。
+  - `npm test`、`npm run test:e2e`、`npm run build` 全綠。
+- evidence:
+- notes:
+
+## B12. 拿掉畫面上的開發者用語＋守衛
+- status: TODO
+- model: sonnet
+- depends: B11
+- spec: SPEC-v4 #28–#30
+- scope:
+  - 先寫守衛，而且守衛要先紅：`e2e/no-dev-jargon.spec.ts`。依序走過這些狀態，每一步讀 `document.body.innerText`，斷言不含 `SPEC`、`localStorage`、`curl`、`kTotalStrokes`、`kRSUnicode`、`$comment`、`tools/`、`src/`（大小寫敏感，照原字比對）。
+    1. 首頁
+    2. 取名結果，展開一組並展開忌字
+    3. 帶預產期收藏與比較視圖（用 `addInitScript` 預寫收藏）
+    4. 分析結果：有時辰
+    5. 分析結果：無時辰（會出現 `main.ts:690` 那句）
+    6. 名詞說明全部展開
+    7. 頁尾與資料來源區塊
+    
+    斷言失敗時要印出命中的字與前後 20 字，方便定位。
+  - 已知命中點（2026-09-13 grep）：
+    - `src/main.ts:690`「（SPEC-v2 #4）」
+    - `src/naming-ui.ts:206`「（SPEC-v3 #8）」
+    - `src/naming-ui.ts:279`「（localStorage）」
+    - `index.html:228`「（localStorage）」
+    - 資料檔備註：`src/data/numerology-81.json`、`src/data/ganzhi.json` 的「已 curl 逐字比對」；`yongshen.json`、`glossary.json`、`dst-taiwan.json` 等若有被渲染的欄位含禁用字也要改（`$comment` 欄位不會被渲染，不必改）。
+    - **以守衛實跑的命中為準**，上面只是起點。
+  - 改寫原則（#29）：
+    - 「」內的原文引文一字不改，只改描述查證方式的開發者用語，例如「已 curl 逐字比對」改為「已與原網頁逐字核對」。
+    - 「localStorage」改為「只存在這台裝置的瀏覽器」。
+    - SPEC 編號直接刪掉，句子要讀得通。
+    - 由腳本產生的資料檔（`kangxi-strokes.json`、`components.json`、`solar-terms.json`、`char-wuxing.json`、`locations.json`）若被渲染的欄位命中，要改 `tools/gen-*.mjs` 後重跑該腳本，不可手改 JSON；重跑需要 `tools/raw/` 的上游檔，缺檔時回報 BLOCKED 並說明缺哪個。
+    - `src/data/index.ts` 若用 `source` 欄位組字串，禁用字可能來自組字邏輯，也要查。
+  - 既有 vitest／E2E 若有斷言依賴舊字串（例如頁尾 spec 的「localStorage」字樣），同步改斷言，並在 notes 記錄。
+- verify:
+  - before：守衛在改寫前實跑，記錄紅燈數量與命中清單（貼進 notes）。
+  - after：守衛綠。
+  - 變異測試：在 `naming-ui.ts` 放回「（SPEC-v3 #8）」，守衛要紅，然後還原。
+  - `git diff src/data/` 審閱：「」內的引文沒有被動到（可用腳本抽出前後所有「…」片段比對是否相同，把結果貼進 evidence）。
+  - `npm test`、`npm run test:e2e`、`npm run build` 全綠。
+- evidence:
+- notes:
+
+## B13. 回歸檢查＋第二次 mirror（主 agent）
+- status: TODO
+- model: main
+- depends: B12
+- spec: SPEC-v4 #31
+- scope:
+  - `node tools/lighthouse-a11y.mjs`：三態分數 ≥ 95。
+  - `tools/raw/mirror-shots.mjs` 拍 after 截圖，與 `docs/evidence/v4-walkthrough/` 做前後對照。
+  - 再跑一次 `/mio-mirror`，評審 prompt 要標明哪些是改動前的舊圖。
+  - 結論追加到 `docs/design-review/`。
+- verify: Lighthouse 數字、前後截圖、mirror 對照。
+- evidence:
+- notes:
