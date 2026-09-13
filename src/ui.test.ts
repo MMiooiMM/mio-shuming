@@ -538,3 +538,38 @@ describe('UI（Codex review 回修的回歸）', () => {
     expect(document.querySelectorAll('details.combo')).toHaveLength(0);
   });
 });
+
+describe('名詞就地解釋（SPEC-v4 #9、#10）', () => {
+  beforeEach(async () => {
+    localStorage.clear();
+    await mount();
+  });
+
+  it('分析模式：按鈕切換 aria-expanded 與說明區塊的 hidden，文字來自 glossary 資料檔', async () => {
+    const { glossaryOf } = await import('./data/index.ts');
+    submit({ ...BASE, year: '1998', month: '6', day: '10', hour: '10', minute: '0' });
+    const button = document.querySelector<HTMLButtonElement>('button[aria-label="用神是什麼？"]')!;
+    expect(button).not.toBeNull();
+    const panel = document.getElementById(button.getAttribute('aria-controls')!)!;
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    expect(panel.hidden).toBe(true);
+    expect(panel.textContent).toContain(glossaryOf('用神')!.text);
+
+    const resultBefore = document.getElementById('result')!.firstElementChild;
+    button.click();
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    expect(panel.hidden).toBe(false);
+    // 展開只切換顯示，不觸發重算重繪。
+    expect(document.getElementById('result')!.firstElementChild).toBe(resultBefore);
+
+    button.click();
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    expect(panel.hidden).toBe(true);
+  });
+
+  it('資料來源納入名詞解釋的出處', () => {
+    const text = submit(BASE);
+    expect(text).toContain('名詞解釋・天格、人格、地格、外格、總格');
+    expect(text).toContain('名詞解釋・用神');
+  });
+});

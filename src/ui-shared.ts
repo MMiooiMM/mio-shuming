@@ -5,6 +5,7 @@ import {
   COMPONENT_SOURCE,
   DST_EXCLUDED,
   DST_SOURCE,
+  GLOSSARY,
   KANGXI_SOURCE,
   LICHUN_SOURCE,
   LOCATION_SOURCE,
@@ -21,6 +22,50 @@ export function esc(s: string): string {
   );
 }
 
+// --- 名詞就地解釋（SPEC-v4 #9、#10）-------------------------------------------
+//
+// 解釋文字只從 glossary.json 來。按鈕是原生 <button>，Enter／Space 由瀏覽器轉成
+// click，所以只需要一個 click 處理（WAI-ARIA APG Disclosure pattern：role button、
+// aria-expanded 反映顯示狀態、aria-controls 指向說明區塊）。
+// 說明區塊用 `hidden` 屬性切換——style.css 的 `[hidden]{display:none!important}`
+// 保證不會被 class 的 display 蓋掉。
+
+/** 一個名詞的「按鈕＋說明區塊」。`scope` 讓兩個模式同時在 DOM 裡時 id 不相撞。 */
+export interface TermParts {
+  button: string;
+  panel: string;
+}
+
+export function termParts(term: string, scope: string): TermParts {
+  const index = GLOSSARY.findIndex((g) => g.term === term);
+  const entry = GLOSSARY[index];
+  // 名詞沒收錄就不出按鈕，不臆造說明；glossary.test.ts 保證指定名詞都在。
+  if (!entry) return { button: '', panel: '' };
+  const id = `term-${scope}-${index}`;
+  return {
+    button: `<button type="button" class="term-toggle" data-action="toggle-term"
+      aria-expanded="false" aria-controls="${id}" aria-label="${esc(entry.term)}是什麼？">?</button>`,
+    panel: `<p class="term-text" id="${id}" hidden><strong>${esc(entry.term)}</strong>　${esc(entry.text)}</p>`,
+  };
+}
+
+/**
+ * 處理名詞按鈕的點擊（含鍵盤 Enter／Space 觸發的 click）。命中並處理回 true，
+ * 呼叫端即可結束自己的 click 處理。
+ */
+export function handleTermToggle(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false;
+  const button = target.closest<HTMLButtonElement>('[data-action="toggle-term"]');
+  if (!button) return false;
+  const panelId = button.getAttribute('aria-controls');
+  const panel = panelId ? document.getElementById(panelId) : null;
+  if (!panel) return true;
+  const expand = button.getAttribute('aria-expanded') !== 'true';
+  button.setAttribute('aria-expanded', String(expand));
+  panel.hidden = !expand;
+  return true;
+}
+
 export function luckClass(luck: Luck): string {
   return luck === '吉' ? 'tag--good' : luck === '半吉' ? 'tag--mid' : 'tag--bad';
 }
@@ -30,6 +75,18 @@ export function verdictClass(v: CharVerdict['verdict']): string {
   if (v === '忌') return 'tag--bad';
   if (v === '喜忌並見') return 'tag--mid';
   return 'tag--flat';
+}
+
+/** 名詞解釋的出處，同一網址的名詞併成一列（五格五條都出自同一本書）。 */
+function glossarySourceRows(): [string, string, string][] {
+  const byUrl = new Map<string, { terms: string[]; notes: string[] }>();
+  for (const g of GLOSSARY) {
+    const row = byUrl.get(g.source.url) ?? { terms: [], notes: [] };
+    row.terms.push(g.term);
+    row.notes.push(`${g.term}：${g.source.note}`);
+    byUrl.set(g.source.url, row);
+  }
+  return [...byUrl].map(([url, r]) => [`名詞解釋・${r.terms.join('、')}`, r.notes.join(' '), url]);
 }
 
 /**
@@ -104,6 +161,7 @@ export function sourcesSection(mode: 'analysis' | 'naming' = 'analysis'): string
       `${COMPONENT_SOURCE.ids}（授權 ${COMPONENT_SOURCE.license}）。${COMPONENT_SOURCE.variantTable}`,
       COMPONENT_SOURCE.url,
     ],
+    ...glossarySourceRows(),
   ];
   return `
     <section class="card" id="sources">

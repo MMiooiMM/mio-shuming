@@ -12,7 +12,7 @@ import {
   zodiacReasons,
 } from './engine/naming.ts';
 import type { DueZodiac, NamingCandidate, NamingCombos, StrokeCombo } from './engine/naming.ts';
-import { esc, luckClass, sourcesSection, verdictClass } from './ui-shared.ts';
+import { esc, handleTermToggle, luckClass, sourcesSection, termParts, verdictClass } from './ui-shared.ts';
 
 // --- 收藏（SPEC-v3 #10）：localStorage、純前端、不上傳 -------------------------
 
@@ -97,6 +97,19 @@ function comboSummary(c: StrokeCombo, double: boolean): string {
       .join('')}`;
 }
 
+/**
+ * 取名結果的名詞解釋（SPEC-v4 #9）。組合很多，逐格放按鈕會重複幾十次，
+ * 所以在說明區集中一列；文字仍只來自 glossary.json。
+ */
+function namingTermsRow(): string {
+  const parts = ['三才', '天格', '人格', '地格', '外格', '總格'].map((t) => ({ t, ...termParts(t, 'naming') }));
+  return `
+    <p class="section__note term-legend">名詞說明：${parts
+      .map((p) => `<span class="term-inline">${esc(p.t)}${p.button}</span>`)
+      .join('')}</p>
+    ${parts.map((p) => p.panel).join('')}`;
+}
+
 function introSection(r: NamingCombos): string {
   const tian = r.combos[0]?.grids.find((g) => g.name === '天格');
   return `
@@ -120,6 +133,7 @@ function introSection(r: NamingCombos): string {
              （單姓恆為假1＋假1＝2；複姓＝姓首字＋假1），同樣取名無法改變——
              <strong>不計吉凶</strong>，通行版說法見資料來源。</p>`
       }
+      ${namingTermsRow()}
       <p class="section__note">
         每組列出三才與五格的<strong>分項判定</strong>；組合依筆畫升冪排列——那是枚舉順序，
         不是優劣排序，本站<strong>不合成單一總分</strong>。點開組合可見該筆畫的候選字。
@@ -387,6 +401,7 @@ export function initNaming(opts: NamingUiOptions): void {
   };
 
   resultEl.addEventListener('click', (event) => {
+    if (handleTermToggle(event.target)) return;
     const target = event.target;
     if (!(target instanceof HTMLElement) || !current) return;
 

@@ -1,6 +1,6 @@
 import './style.css';
 import { COUNTIES, DST_CAVEAT, STANDARD_MERIDIAN, countyOf } from './data/index.ts';
-import { esc, luckClass, sourcesSection, verdictClass } from './ui-shared.ts';
+import { esc, handleTermToggle, luckClass, sourcesSection, termParts, verdictClass } from './ui-shared.ts';
 import { initNaming } from './naming-ui.ts';
 import { analyse } from './engine/index.ts';
 import { matchName } from './engine/match.ts';
@@ -27,12 +27,17 @@ const MANUAL_PLACE = '__manual__';
 
 const ELEMENTS: Element[] = ['木', '火', '土', '金', '水'];
 
+/** 分析模式的名詞解釋 id 前綴（取名模式用 'naming'，兩者同時在 DOM 裡）。 */
+const TERM_SCOPE = 'analysis';
+
 function gridItem(g: Grid): string {
+  const term = termParts(g.name, TERM_SCOPE);
   return `
     <li class="grid-item">
-      <span class="grid-item__name">${esc(g.name)}</span>
+      <span class="grid-item__head"><span class="grid-item__name">${esc(g.name)}</span>${term.button}</span>
       <span class="grid-item__value"><b>${g.value}</b>${esc(g.element)}</span>
       <span class="tag ${luckClass(g.fate.luck)}">${esc(g.fate.luck)}・${esc(g.fate.title)}</span>
+      ${term.panel}
       <span class="grid-item__detail">${esc(g.formula)}　—　${esc(g.fate.text)}</span>
     </li>`;
 }
@@ -58,13 +63,15 @@ const signedMinutes = (n: number) => `${n >= 0 ? '+' : '−'}${Math.abs(n).toFix
 function correctionSection(c: TimeCorrection, place: RunPlace): string {
   const county = place.county ? countyOf(place.county) : undefined;
   const spanMinutes = county ? (county.max - county.min) * 4 : 0;
+  const trueSolar = termParts('真太陽時', TERM_SCOPE);
 
   return `
     <section class="card">
       <h2 class="section__title">
         <span>時間校正</span>
-        <span class="section__note">時鐘時間 → 真太陽時</span>
+        <span class="section__note">時鐘時間 → 真太陽時${trueSolar.button}</span>
       </h2>
+      ${trueSolar.panel}
       <p class="conversion">
         <span class="conversion__from">${esc(hhmm(c.clock))}</span>
         <span class="conversion__arrow">→</span>
@@ -120,6 +127,8 @@ function chartSection(chart: BaziChart, lateZiSwitchesDay: boolean): string {
         ).join('')}
       </ul>
     </li>`;
+  const shishen = termParts('十神', TERM_SCOPE);
+  const hidden = termParts('藏干', TERM_SCOPE);
 
   return `
     <section class="card">
@@ -142,6 +151,11 @@ function chartSection(chart: BaziChart, lateZiSwitchesDay: boolean): string {
           )
           .join('')}
       </ul>
+      <p class="section__note term-legend">
+        每柱由上而下：柱位、干支、天干的十神${shishen.button}、地支的藏干${hidden.button}
+      </p>
+      ${shishen.panel}
+      ${hidden.panel}
       <ul class="dist-rows">
         ${dist('四柱天干', chart.distribution.stems)}
         ${dist('含地支藏干', chart.distribution.withHidden)}
@@ -172,13 +186,15 @@ function chartSection(chart: BaziChart, lateZiSwitchesDay: boolean): string {
 function yongShenSection(y: YongShenResult): string {
   const chips = (elements: Element[], cls: string) =>
     elements.map((e) => `<span class="tag ${cls}">${esc(e)}</span>`).join(' ');
+  const term = termParts('用神', TERM_SCOPE);
 
   return `
     <section class="card">
       <h2 class="section__title">
-        <span>用神</span>
+        <span><span class="term-label">用神</span>${term.button}</span>
         <span class="section__note">扶抑為主 ＋ 調候修正 ＋ 從格偵測</span>
       </h2>
+      ${term.panel}
 
       <p class="conversion">
         <span>日主 <strong>${esc(y.dayMaster.stem)}（${esc(y.dayMaster.element)}）</strong></span>
@@ -366,6 +382,7 @@ function noBaziNotice(reason: string): string {
 function render(a: Analysis): string {
   const fullName = esc(a.surname + a.givenName);
   const strokeTotal = a.strokes.reduce((n, s) => n + (s.strokes ?? 0), 0);
+  const sancai = termParts('三才', TERM_SCOPE);
 
   return `
     <section class="card">
@@ -395,9 +412,10 @@ function render(a: Analysis): string {
 
     <section class="card">
       <h2 class="section__title">
-        <span>三才配置</span>
+        <span><span class="term-label">三才配置</span>${sancai.button}</span>
         <span class="tag ${luckClass(a.sancai.luck)}">${esc(a.sancai.luck)}</span>
       </h2>
+      ${sancai.panel}
       <p><strong>${esc(a.sancai.elements.join(' → '))}</strong>（天格 → 人格 → 地格）</p>
       <ul class="notes">
         ${a.sancai.relations.map((r) => `<li>${esc(r)}</li>`).join('')}
@@ -700,6 +718,8 @@ resultEl.addEventListener('change', (event) => {
 // 兩個「一鍵切換重算」：早晚子時（SPEC-v2 #12）與夏令起訖當日的兩種假設。
 // 按鈕是結果區重繪出來的，所以監聽容器而不是按鈕本身。
 resultEl.addEventListener('click', (event) => {
+  // 名詞解釋只切換顯示，不重算、不重繪（重繪會把展開狀態洗掉）。
+  if (handleTermToggle(event.target)) return;
   const target = event.target;
   if (!(target instanceof HTMLElement) || !lastRun) return;
   if (target.closest('[data-action="toggle-late-zi"]')) {

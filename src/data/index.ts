@@ -12,6 +12,7 @@ import locations from './locations.json';
 import yongshen from './yongshen.json';
 import charWuxing from './char-wuxing.json';
 import dstTaiwan from './dst-taiwan.json';
+import glossary from './glossary.json';
 
 interface StrokeBlock {
   start: number;
@@ -446,6 +447,30 @@ export function elementOfNumber(n: number): Element {
 
 export const SHENG = numerology.sheng as Record<Element, Element>;
 export const KE = numerology.ke as Record<Element, Element>;
+
+// --- 名詞解釋（SPEC-v4 #9、#10）----------------------------------------------
+//
+// 解釋文字只存在 glossary.json；UI 只負責把它就地展開，不寫死任何說明。
+
+export interface GlossarySource {
+  /** 原文摘錄與本站取捨說明。 */
+  note: string;
+  url: string;
+}
+
+export interface GlossaryEntry {
+  term: string;
+  /** 1–2 句白話解釋。 */
+  text: string;
+  source: GlossarySource;
+}
+
+export const GLOSSARY = glossary.terms as GlossaryEntry[];
+
+/** 名詞 → 解釋；未收錄回 undefined（呼叫端不應臆造說明）。 */
+export function glossaryOf(term: string): GlossaryEntry | undefined {
+  return GLOSSARY.find((g) => g.term === term);
+}
 
 export const ZODIAC_SOURCE = zodiacTable.source;
 export const NUMEROLOGY_SOURCE = numerology.source;
