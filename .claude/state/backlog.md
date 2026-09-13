@@ -354,7 +354,7 @@
   - 未改資料來源文字（留給 B15）。
 
 ## B15. 資料來源文字改人話＋守衛類別規則
-- status: TODO
+- status: DONE(8dab01a)
 - model: opus
 - depends: B14
 - spec: SPEC-v4 #36–#37（沿用 #29 的改寫原則）
@@ -389,8 +389,13 @@
     - 腳本重產的 JSON 逐欄比對，只有 `source` 變動。
   - **Lighthouse**：`node tools/lighthouse-a11y.mjs` 三態仍 ≥ 95，連結文字改短後要確認沒掉分。
   - `npm test`、`npm run test:e2e`、`npm run build` 全綠。
-- evidence:
+- evidence: 守衛（BANNED＋BANNED_PATTERNS 五類）before 舊 build 20 failed／4 passed（每寬 10/12 紅，首頁與收藏比較兩態本就無來源區塊）→ after 24/24。變異 5 類各一次（docs/v2-sources.md、`**x**`、ids.txt、kBigFive、conflicts 注入來源區塊）皆紅且類別正確，已還原。重產 JSON 逐欄比對：char-wuxing 只變 source.{wuxing,common}.{dataset,caveat}、components 只變 source.ids、kangxi-strokes 只變 source.unihan（生成器自檢 OK）。「」引文 7 檔 44 段前後逐字相同。連結 `unicode.org ↗` 等，href 完整保留。npm test 318→321（新 src/ui-shared.test.ts 3 條）；test:e2e 82 passed；build OK；Lighthouse 95／96／96（不變）。截圖 scratchpad `B15-before/`、`B15-after/`、`B15-after-sources-390.png`。Codex VERDICT: APPROVE（EVIDENCE none）。CI run 34755735858 success。
 - notes:
+  - before 紅燈清單（每個有來源區塊的狀態都相同）：檔案路徑 docs/v2-sources.md（glossary 用神 note）；檔名 Unihan_IRGSources.txt、Unihan.zip、gsc_pinyin.csv、Unihan_OtherMappings.txt、ids.txt、v2-sources.md；Markdown 粗體 `**來源未交代判定依據**`、`**不等同**`；Unicode 欄位名 kBigFive；內部欄位名 conflicts。
+  - Deviation 1：brief 列的 yongshen.json `ruleSource.note`（docs 路徑）與 `congGe`（`**`）守衛實跑**未命中**（目前無 UI 消費端）；仍依 #36「資料檔一律存純文字」一併修，並把非 `$` 鍵值中的 `**` 也去掉（yongshen 得地、ganzhi.caveat、hidden-stems classical.note）。`$comment`／`$operationalized` 屬註解不動；ganzhi.json 未渲染 note 的 docs 路徑不在 #36（畫面文字）範圍，未改。
+  - Deviation 2：URL 連結文字改網域後，URL 裡的 Unihan.zip／Unihan_OtherMappings.txt 自然消失；aria-label 為「{標題}來源：{網域}（另開新視窗）」，含可見文字（label-in-name）。
+  - 用詞決策：kangxi unihan 改「Unicode 漢字資料庫（Unihan）的部首筆畫欄位」；components ids 改「漢字結構拆解表（IDS，cjkvi-ids 專案）」；gsc 改「開源漢字五行資料表（ben-hua/general_standard_chinese，…）」保留 repo 名作為來源名。
+  - 既有測試無依賴舊字串（ui.test.ts 的「不等同」仍在）。未改元件顏色。
 
 ## B16. 回歸＋第三次 mirror（主 agent）
 - status: TODO
