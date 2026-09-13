@@ -27,7 +27,7 @@
 ---
 
 ## B0. Playwright E2E 基礎建設＋CI 閘門＋手機不溢位
-- status: TODO
+- status: DONE(673e309)
 - model: opus
 - depends: —
 - spec: SPEC-v4 #17（基礎＋既有兩模式主流程）、#18、#20
@@ -42,8 +42,8 @@
   - before：記錄 390px 下兩模式的 `scrollWidth/clientWidth` 實測值。after：E2E 全綠。
   - 變異測試：暫時把某個斷言對象改壞（例如刪掉候選字區塊的 selector），確認 spec 會紅，再還原。
   - 推上 main 後 GitHub Actions 該次 run 成功且含 E2E 步驟（`gh run view` 輸出）。
-- evidence:
-- notes:
+- evidence: before（CSS 未動）390px scrollWidth/clientWidth 首頁／分析結果／取名結果（候選字展開）皆 390/390，所以不改 CSS。after：本機 test:e2e 6 passed（3 tests × mobile/desktop）、npm test 271 passed、build OK。變異測試：`.cand-pos`→`.cand-posX` 紅；注入 `.page__header{min-width:30rem}` → mobile 496>390，3 failed；兩者皆已還原。CI run 34733421021 成功：npm test（271）→ playwright install → test:e2e（CI log 顯示 6 passed、390/390）→ build → deploy。Codex review APPROVE（只有 nit）。
+- notes: 依據（istj）：playwright.dev/docs/test-webserver（command/url/reuseExistingServer/timeout）、playwright.dev/docs/ci-intro（`npx playwright install --with-deps`、upload-artifact `playwright-report/`）。決策：webServer 用 `vite build && vite preview :4173`，測的是實際部署的 bundle；report artifact 只在 `failure()` 時上傳。e2e/ 與 playwright.config.ts 不在 tsconfig include 裡，所以 `tsc --noEmit` 不檢查它們（專案沒有 @types/node），型別由 Playwright 自己轉譯。後續項目請把新 spec 放 `e2e/`，並重用 `expectNoHorizontalScroll` 的寫法。Deviation：無（實測沒有溢位，scope 的「若溢位才修 CSS」沒有觸發）。
 
 ## B1. 免責與隱私聲明
 - status: TODO
