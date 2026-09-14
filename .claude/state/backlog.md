@@ -442,7 +442,7 @@
 - notes: 評審前三建議：比較表溢出改直排卡；統一有箭頭的摺疊列（資料來源＋筆畫組）；分析頁細節預設收合＋說明字 13px。E2E「取名結果（展開候選字與忌字）」在 12 worker 並行下 12/12 逾時失敗、串行 6/6 通過（8.7s），屬負載不穩定。
 
 ## B19. 摺疊列統一（主 agent）
-- status: TODO
+- status: DONE(315d7e8)
 - model: main
 - depends: B18
 - spec: SPEC-v4 #48–#52（J 節，2026-09-13 凍結）
@@ -454,15 +454,15 @@
   - **before**：新守衛先對舊碼跑（應紅：無 chevron）。
   - **after**：全綠；變異測試：各變體拿掉 chevron 一次。
   - `npm test`、`npm run test:e2e`、`npm run build` 全綠；深色模式截圖檢查 chevron 可見。
-- evidence:
-- notes: before 截圖沿用 `docs/evidence/v4i-after/`（B17 後程式未動外觀）。
+- evidence: 守衛 before（pre-J）4 failed「沒有 chevron」→ after 全綠。Codex 首審 REQUEST_CHANGES（旋轉只驗 first、一致性只比左右 padding 且不跨狀態、可見性可被 opacity:0 騙過、資料來源卡外圈不可點）→ 守衛重寫（兩模式全展開逐一驗、跨狀態基準、opacity/visibility/寬高、邊緣點擊）＋`#sources.card{padding:0;overflow:hidden}`；變異 5 項（第 n+3 組不轉、忌字 opacity:0、分析來源 padding 不同、卡片 padding 0.3rem、忌字 content:none）皆紅且類別正確 → 複審 APPROVE。第五輪 mirror 抓到桌機退步（絕對定位 chevron 讓 1280 寬 16 列都掉一顆標籤靠左）→ 桌機 grid：16 列 69px、標籤群右緣一致、0 重疊；手機流動＋1.9rem：13/16 列 74px（grid 會全部 102px）。hover 包 `(hover: hover)`，實測滑鼠點擊 focus-visible=false、Tab=true、觸控點擊無底色。test:e2e 96；Lighthouse 95／95／96。
+- notes: 截圖 `docs/evidence/v4j-after/`（mirror 看的第一版）、`v4j-after3/`（修正版，本機）。量測腳本 `tools/raw/probe-combo-rows.mjs`。未解：桌機 16 列仍兩行（要拿掉「・吉」）、手機 3/16 列 102px。
 
 ## B20. 回歸＋第五次 mirror（主 agent）
-- status: TODO
+- status: DONE(docs/design-review/2026-09-14-external-ui-critique-round5.md)
 - model: main
 - depends: B19
 - spec: SPEC-v4 #53
 - scope: Lighthouse 三態 ≥ 95；AFTER 截圖 `docs/evidence/v4j-after/`；第五次 `/mio-mirror`；結論追加到 `docs/design-review/`。
 - verify: Lighthouse 數字、前後截圖、mirror 對照。
-- evidence:
-- notes:
+- evidence: Lighthouse 95／95／96；第五輪 mirror＋修正後聚焦複查（①部分 ②③④解決；A 經實測為截圖假象；B 已修）。
+- notes: 下一輪候選：拿掉列表「・吉」讓標籤一行排完（桌機兩行、手機參差同源）；區塊標題手機斷字；比較表裁切；筆畫組展開區四層框與內距；忌字說明重複括號；圖卡網址；hover 底色 --bg 太淡。

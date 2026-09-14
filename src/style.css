@@ -965,9 +965,12 @@ select:focus-visible {
   }
 }
 
-.combo > summary:hover,
-.sources-toggle > summary:hover {
-  background: var(--bg);
+/* 只給真的有滑鼠的裝置：觸控裝置點過之後 :hover 會黏在最後點的那一列。 */
+@media (hover: hover) {
+  .combo > summary:hover,
+  .sources-toggle > summary:hover {
+    background: var(--bg);
+  }
 }
 
 .combo > summary:focus-visible,
