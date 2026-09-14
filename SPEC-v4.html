@@ -188,6 +188,20 @@ td:first-child{white-space:nowrap;font-weight:600}
 </section>
 
 <section>
+  <h2>J. 摺疊列統一（2026-09-13 追加凍結）</h2>
+  <p class="note">來源：docs/design-review/2026-09-13-external-ui-critique-round4.md 第 2 段第 ② 項；範圍由使用者裁決。起因：I 節 #40 要資料來源沿用 .combo 樣式，把它沒有展開指示的缺陷一起繼承了；本節先定義元件，再規定誰使用。</p>
+  <ol>
+    <li value="48"><strong>摺疊列</strong>：資料來源與筆畫組使用同一個元件；整列可點、最低高度 48px；右側 16px chevron（ink-soft），展開旋轉 180°；hover 底色 bg；:focus-visible 顯示 2px accent 外框；不新增色碼。</li>
+    <li value="49"><strong>框線</strong>：摺疊列本身不加框，列與列之間用 1px line 分隔線；資料來源卡只有一列，整張卡就是那一列。</li>
+    <li value="50"><strong>次要摺疊（生肖忌字）</strong>：維持小字文字樣式，加 12px chevron 與同樣的展開旋轉。</li>
+    <li value="51">旋轉動畫 150ms；prefers-reduced-motion: reduce 時不做動畫。</li>
+    <li value="52">E2E 類別規則：390／1280 所有結果狀態下，每一個 details &gt; summary 都有可見 chevron，展開前後 transform 不同；同一變體的 chevron 顏色、尺寸與 summary padding 計算樣式相同。變異測試：拿掉任一變體的 chevron，測試要紅。</li>
+    <li value="53">vitest 與 E2E 全數通過；Lighthouse 三態無障礙 ≥ 95；390／1280 前後對照截圖；第五次 /mio-mirror。</li>
+  </ol>
+  <div class="callout"><strong>本輪不做：</strong>分析頁細節預設收合、筆畫組展開後的三層框與標籤換行、比較表裁切、圖卡上的網址、選中態顏色。</div>
+</section>
+
+<section>
   <h2>沿用原則（v1–v3 全數繼承）</h2>
   <p class="note" style="font-size:.9375rem;color:var(--ink)">不合成單一總分；每條規則出處寫進資料檔 <code>source</code> 欄位並於「資料來源」呈現；流派衝突不擅自調和；引擎純函式；罕字與範圍外據實回報不猜；GPLv2。</p>
 </section>
@@ -224,6 +238,9 @@ td:first-child{white-space:nowrap;font-weight:600}
       <tr><td>匯出鈕層級（09-13 追加）</td><td>兩者都次要</td><td>兩者都主要</td></tr>
       <tr><td>UI 修正第三輪（09-13 追加）</td><td>資料來源收合＋清識別碼＋出錯捲動</td><td>送出後表單收成摘要列（實測前提不成立）；只修錯誤捲動；選中態改墨色</td></tr>
       <tr><td>來源收合深度（09-13 追加）</td><td>整區收合，內容不刪減</td><td>逐項降噪（每項只留一行摘要）；不收合</td></tr>
+      <tr><td>UI 修正第四輪（09-13 追加）</td><td>有箭頭的摺疊列</td><td>比較表裁切；圖卡網址＋小瑕疵；先收工</td></tr>
+      <tr><td>摺疊列框線（09-13 追加）</td><td>兩者都用分隔線</td><td>只拿掉資料來源內框；框都保留只加箭頭</td></tr>
+      <tr><td>生肖忌字摺疊（09-13 追加）</td><td>加小箭頭、維持文字樣式</td><td>改成同一個整列元件；不動</td></tr>
     </tbody>
   </table>
   </div>
