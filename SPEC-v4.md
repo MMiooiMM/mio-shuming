@@ -203,6 +203,10 @@ v1–v3 的計算引擎與出處追溯已完成，缺的是「讓人看得懂、
     - 右側 16px chevron，顏色 `--ink-soft`，展開時旋轉 180°。
     - hover 底色 `--bg`；`:focus-visible` 顯示 2px `--accent` 外框。
     - 不新增色碼，深色模式沿用 token。
+    > **2026-09-14 實作註記（B19）**：
+    > - 桌機摺疊列用 grid，chevron 是最後一欄（筆畫組 `auto 1fr 16px`，資料來源 `1fr 16px`），標籤包進 `.combo__tags` 整群靠右換行。第一版用絕對定位 chevron＋右側 2.2rem padding，1280 寬 16 列全部掉一顆標籤到第二行靠左（第五輪評審抓到）；改 grid 後 16 列一律 69px、標籤群右緣對齊、0 重疊。
+    > - 手機（≤30rem）改回流動排列＋絕對定位 chevron，`padding-right: 1.9rem`：grid 會讓每列 74→102px；1.9rem 時 16 列中 13 列 74px（2.2rem 時只有 10 列）。
+    > - 資料來源卡 `padding: 0; overflow: hidden`，點卡片任何位置都會展開；聚焦外框改畫在內側（`outline-offset: -2px`）避免被裁掉。
 49. **框線**：摺疊列本身不加框，列與列之間用 1px `--line` 分隔線。資料來源卡只有一列，整張卡就是那一列（卡片裡不再套框）。
 50. **次要摺疊（生肖忌字）**：維持小字文字樣式，但加 12px chevron 與同樣的展開旋轉。
 51. 旋轉動畫 150ms；`prefers-reduced-motion: reduce` 時不做動畫。

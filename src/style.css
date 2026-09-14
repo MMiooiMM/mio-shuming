@@ -20,6 +20,8 @@
   /* 名詞說明框中性底（SPEC-v4 #34）：--ink on #f3f1ec = 15.02:1。 */
   --note-bg: #f3f1ec;
   --radius: 12px;
+  /* 摺疊元件的 chevron 形狀（顏色由 background-color 決定，深色模式沿用 token）。 */
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2.5 5.5l5.5 5.5 5.5-5.5' fill='none' stroke='black' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   --gap: 1rem;
 }
 
@@ -579,10 +581,11 @@ input[type='number']::-webkit-inner-spin-button {
   color: var(--accent);
 }
 
-/* 資料來源預設收合（SPEC-v4 #40）：外框與摘要列沿用 .combo。
-   下方 .combo 共用規則的 margin-bottom 在後面，要靠 id 權重才蓋得掉。 */
-#sources .sources-toggle {
-  margin-bottom: 0;
+/* 資料來源（SPEC-v4 #40、#49）：卡片只有一列摺疊列，整張卡就是那一列，不再套框。
+   padding 歸零讓 summary 貼齊卡片邊，點卡片任何位置都會展開；overflow 讓 hover 底色跟著卡片圓角。 */
+#sources.card {
+  padding: 0;
+  overflow: hidden;
 }
 
 .sources-toggle .section__title {
@@ -887,32 +890,128 @@ select:focus-visible {
   align-items: center;
 }
 
-/* 筆畫組合的摺疊列 */
-.combo,
-.sources-toggle {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  margin-bottom: 0.5rem;
+/* --- 摺疊元件（SPEC-v4 #48–#51）---------------------------------------------
+   整列摺疊（筆畫組、資料來源）與次要摺疊（生肖忌字）共用同一個 chevron。
+   列本身不加框，列與列之間用分隔線。 */
+.combo + .combo {
+  border-top: 1px solid var(--line);
 }
 
 .combo > summary,
-.sources-toggle > summary {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.6rem 0.7rem;
+.sources-toggle > summary,
+.cand-avoid > summary {
+  list-style: none;
   cursor: pointer;
 }
 
 .combo > summary::-webkit-details-marker,
-.sources-toggle > summary::-webkit-details-marker {
+.sources-toggle > summary::-webkit-details-marker,
+.cand-avoid > summary::-webkit-details-marker {
   display: none;
+}
+
+/* chevron 是 grid 的最後一欄（不是絕對定位）：不額外吃右側 padding，標籤群換行時整群靠右。 */
+.combo > summary,
+.sources-toggle > summary {
+  display: grid;
+  align-items: center;
+  column-gap: 0.6rem;
+  row-gap: 0.35rem;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 0.6rem 0.7rem;
+  border-radius: 8px;
+}
+
+.sources-toggle > summary {
+  grid-template-columns: 1fr 16px;
+}
+
+.combo > summary {
+  grid-template-columns: auto 1fr 16px;
+}
+
+.combo__tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}
+
+/* 手機：標籤直接接在筆畫後面流動換行（grid 會讓標籤整群掉到下一行，每列多 28px），
+   chevron 改絕對定位、右側預留空間。兩種摺疊列的 padding 在同一寬度下仍相同。 */
+@media (max-width: 30rem) {
+  .combo > summary,
+  .sources-toggle > summary {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    /* chevron 占 0.7rem＋16px；1.9rem 留約 3px 間隙（390 寬 16 列中 13 列單行標籤，2.2rem 時只有 10 列）。 */
+    padding-right: 1.9rem;
+  }
+
+  .combo__tags {
+    display: contents;
+  }
+
+  .combo > summary::after,
+  .sources-toggle > summary::after {
+    position: absolute;
+    right: 0.7rem;
+    top: 50%;
+    margin-top: -8px;
+  }
+}
+
+.combo > summary:hover,
+.sources-toggle > summary:hover {
+  background: var(--bg);
+}
+
+.combo > summary:focus-visible,
+.sources-toggle > summary:focus-visible,
+.cand-avoid > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  /* 畫在內側：資料來源卡 overflow: hidden，外側外框會被裁掉。 */
+  outline-offset: -2px;
+}
+
+.combo > summary::after,
+.sources-toggle > summary::after,
+.cand-avoid > summary::after {
+  content: '';
+  flex: none;
+  width: 16px;
+  height: 16px;
+  background-color: var(--ink-soft);
+  -webkit-mask: var(--chevron) center / contain no-repeat;
+  mask: var(--chevron) center / contain no-repeat;
+  transition: transform 150ms ease;
+}
+
+.cand-avoid > summary::after {
+  width: 12px;
+  height: 12px;
+}
+
+.combo[open] > summary::after,
+.sources-toggle[open] > summary::after,
+.cand-avoid[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .combo > summary::after,
+  .sources-toggle > summary::after,
+  .cand-avoid > summary::after {
+    transition: none;
+  }
 }
 
 .combo__strokes {
   font-weight: 600;
-  margin-right: auto;
 }
 
 .combo__body {
@@ -965,9 +1064,11 @@ select:focus-visible {
 }
 
 .cand-avoid > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   font-size: 0.8125rem;
   color: var(--ink-soft);
-  cursor: pointer;
   padding: 0.3rem 0;
 }
 

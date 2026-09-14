@@ -124,13 +124,15 @@ function comboSummary(c: StrokeCombo, double: boolean): string {
     <span class="combo__strokes">${c.given
       .map((n, i) => `${positionName(i, double)} <b>${n}</b> 畫`)
       .join(' ＋ ')}</span>
-    <span class="tag ${luckClass(c.sancai.luck)}">三才 ${esc(c.sancai.elements.join(''))}・${esc(c.sancai.luck)}</span>
-    ${judged
-      .map(
-        (g) =>
-          `<span class="tag ${luckClass(g.fate.luck)}">${esc(g.name[0]!)}${g.value}・${esc(g.fate.luck)}</span>`,
-      )
-      .join('')}`;
+    <span class="combo__tags">
+      <span class="tag ${luckClass(c.sancai.luck)}">三才 ${esc(c.sancai.elements.join(''))}・${esc(c.sancai.luck)}</span>
+      ${judged
+        .map(
+          (g) =>
+            `<span class="tag ${luckClass(g.fate.luck)}">${esc(g.name[0]!)}${g.value}・${esc(g.fate.luck)}</span>`,
+        )
+        .join('')}
+    </span>`;
 }
 
 /**

@@ -192,6 +192,9 @@ td:first-child{white-space:nowrap;font-weight:600}
   <p class="note">來源：docs/design-review/2026-09-13-external-ui-critique-round4.md 第 2 段第 ② 項；範圍由使用者裁決。起因：I 節 #40 要資料來源沿用 .combo 樣式，把它沒有展開指示的缺陷一起繼承了；本節先定義元件，再規定誰使用。</p>
   <ol>
     <li value="48"><strong>摺疊列</strong>：資料來源與筆畫組使用同一個元件；整列可點、最低高度 48px；右側 16px chevron（ink-soft），展開旋轉 180°；hover 底色 bg；:focus-visible 顯示 2px accent 外框；不新增色碼。</li>
+  </ol>
+  <div class="callout"><strong>2026-09-14 實作註記（B19，#48）：</strong>桌機摺疊列用 grid、chevron 為最後一欄，標籤包進 .combo__tags 整群靠右換行（第一版絕對定位＋右側 2.2rem padding 讓 1280 寬 16 列都掉一顆標籤到第二行靠左）；手機 ≤30rem 改回流動排列＋絕對定位 chevron、padding-right 1.9rem（grid 會讓每列 74→102px）；資料來源卡 padding 0＋overflow hidden 讓整張卡可點，聚焦外框畫在內側。</div>
+  <ol>
     <li value="49"><strong>框線</strong>：摺疊列本身不加框，列與列之間用 1px line 分隔線；資料來源卡只有一列，整張卡就是那一列。</li>
     <li value="50"><strong>次要摺疊（生肖忌字）</strong>：維持小字文字樣式，加 12px chevron 與同樣的展開旋轉。</li>
     <li value="51">旋轉動畫 150ms；prefers-reduced-motion: reduce 時不做動畫。</li>
