@@ -440,3 +440,29 @@
 - verify: Lighthouse 數字、前後截圖、mirror 對照。
 - evidence: Lighthouse 95／95／96（取名態唯一失分為既有深色送出鈕 2.68:1）；AFTER docs/evidence/v4i-after/（本機）。第四輪 mirror：competent，未跨級。三件事：收合做到但收合列元件不及格（無 chevron、框中框）；網域連結做到；識別碼部分——分享圖卡頁尾印 github.io 帳號＋repo 名（Canvas 不在守衛範圍）、81 數理有對維護者說話的後設文字。
 - notes: 評審前三建議：比較表溢出改直排卡；統一有箭頭的摺疊列（資料來源＋筆畫組）；分析頁細節預設收合＋說明字 13px。E2E「取名結果（展開候選字與忌字）」在 12 worker 並行下 12/12 逾時失敗、串行 6/6 通過（8.7s），屬負載不穩定。
+
+## B19. 摺疊列統一（主 agent）
+- status: TODO
+- model: main
+- depends: B18
+- spec: SPEC-v4 #48–#52（J 節，2026-09-13 凍結）
+- scope:
+  - `src/style.css`：摺疊列元件（`.combo`、`.sources-toggle` 共用）去框、分隔線、min-height 48px、右側 16px chevron（`--ink-soft`）、`[open]` 旋轉 180°、hover `--bg`、`:focus-visible` 2px `--accent`；`.cand-avoid` 加 12px chevron；150ms 動畫＋reduced-motion 關閉。
+  - 資料來源卡：卡片內不再套框。
+  - 新 E2E 類別規則：所有結果狀態每個 `details > summary` 有 chevron、展開前後 transform 不同、同變體計算樣式相同。
+- verify:
+  - **before**：新守衛先對舊碼跑（應紅：無 chevron）。
+  - **after**：全綠；變異測試：各變體拿掉 chevron 一次。
+  - `npm test`、`npm run test:e2e`、`npm run build` 全綠；深色模式截圖檢查 chevron 可見。
+- evidence:
+- notes: before 截圖沿用 `docs/evidence/v4i-after/`（B17 後程式未動外觀）。
+
+## B20. 回歸＋第五次 mirror（主 agent）
+- status: TODO
+- model: main
+- depends: B19
+- spec: SPEC-v4 #53
+- scope: Lighthouse 三態 ≥ 95；AFTER 截圖 `docs/evidence/v4j-after/`；第五次 `/mio-mirror`；結論追加到 `docs/design-review/`。
+- verify: Lighthouse 數字、前後截圖、mirror 對照。
+- evidence:
+- notes:
