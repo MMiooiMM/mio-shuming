@@ -468,7 +468,7 @@
 - notes: 下一輪候選：拿掉列表「・吉」讓標籤一行排完（桌機兩行、手機參差同源）；區塊標題手機斷字；比較表裁切；筆畫組展開區四層框與內距；忌字說明重複括號；圖卡網址；hover 底色 --bg 太淡。
 
 ## B21. 筆畫組展開區降噪（主 agent）
-- status: TODO
+- status: DONE(b098478)
 - model: main
 - depends: B20
 - spec: SPEC-v4 #54–#58（K 節，2026-09-15 凍結）
@@ -481,15 +481,15 @@
   - **before**：新守衛先對舊碼跑（應紅）；展開區高度 390／1280 量測。
   - **after**：全綠；變異測試逐項一次；高度 after 量測。
   - `npm test`、`npm run test:e2e`、`npm run build` 全綠。
-- evidence:
-- notes: 分析頁 `.grid-item`（`src/main.ts:40`）共用 class，改動必須限定在展開區內。
+- evidence: 守衛 before（pre-K）10 failed → after 全綠（spacing 12/16/16）。變異 7 項皆紅且訊息正確（含 mirror 後補的「目前搭配」虛線改回 --line → 1.20:1）：左線改 accent、展開區格子加框、`.grid-item{border:0}`（分析頁保護）、notes 間距 0、逐字列補回原因（19×／28×）、臨界期拿掉生肖標記。高度（忌字展開時展開區／忌字清單）：390 單肖 2985→2625／863→514；390 臨界 4280→2996／2159→885；1280 單肖 1880→1896／466→492（原本每列一行，新增原因列反而變長）；1280 臨界 2712→2157／1297→753。npm test 324；test:e2e 105＋1 已知負載不穩（單跑通過）；Lighthouse 95／95／96。
+- notes: 分析頁 `.grid-item`（`src/main.ts:40`）共用 class，改動限定在展開區內（E2E 保護）。截圖 `docs/evidence/v4k-before/`、`v4k-after/`（本機）。
 
 ## B22. 回歸＋第六次 mirror（主 agent）
-- status: TODO
+- status: DONE(docs/design-review/2026-09-15-external-ui-critique-round6.md)
 - model: main
 - depends: B21
 - spec: SPEC-v4 #59
 - scope: Lighthouse 三態 ≥ 95；AFTER 截圖 `docs/evidence/v4k-after/`；第六次 `/mio-mirror`；結論追加到 `docs/design-review/`。
 - verify: Lighthouse 數字、前後截圖、mirror 對照。
-- evidence:
-- notes:
+- evidence: Lighthouse 95／95／96；第六輪 mirror：展開區明顯變好，amateur 偏 competent → competent；唯一退步「目前搭配」分隔被淡底吞掉（實測虛線 1.20:1）已在 B21 修正並加 E2E。
+- notes: 下一輪候選：忌字清單依字根分組＋原因句獨立小段、刪重複「忌」；左線內縮 12px＋深色模式底色層差（展開區對卡片 淺 1.13:1、深 1.10:1）；名一字塊→名二標題間距 25px 不一致；手機候選字標題斷字；列表「・吉」；比較表裁切；圖卡網址。
