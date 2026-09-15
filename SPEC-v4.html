@@ -205,6 +205,20 @@ td:first-child{white-space:nowrap;font-weight:600}
 </section>
 
 <section>
+  <h2>K. 筆畫組展開區降噪（2026-09-15 追加凍結）</h2>
+  <p class="note">來源：docs/design-review/2026-09-14-external-ui-critique-round5.md 第 3 段第 4 項，以及聚焦複查 E、F 項；範圍由使用者裁決。</p>
+  <ol>
+    <li value="54">展開區底色 note-bg，左側 2px neutral 線，內距 12／12／16／14px。不用磚紅（與凶／忌同色相，且名詞說明框已是淡底＋磚紅左線）。</li>
+    <li value="55">展開區內五格格子去框，改 1px line 分隔線列；分析頁五格卡片不動（仍是 1px 框）。</li>
+    <li value="56">五格列與三才關係說明之間 ≥ 12px；三才關係說明與候選字標題之間 ≥ 16px；展開區底部內距 ≥ 16px。</li>
+    <li value="57">生肖忌字清單頂端每隻生肖列一次原因，下方每字只留命中的字根；立春臨界時每字依生肖分列、原因兩肖各列一次。引擎新增結構化欄位（只增不改），既有 explanations 原文與分析頁不變。</li>
+    <li value="58">E2E（390／1280，各項變異測試）：展開區底色與左線；展開區五格列無框有分隔線、分析頁五格卡片仍有框；間距以 getBoundingClientRect 量；忌字清單每列不含原因、原因每肖恰出現一次（含立春臨界）；展開區高度前後量測寫進 commit。</li>
+    <li value="59">vitest 與 E2E 全數通過；Lighthouse 三態無障礙 ≥ 95；390／1280 前後對照截圖；第六次 /mio-mirror。</li>
+  </ol>
+  <div class="callout"><strong>本輪不做：</strong>候選字數量與排序、列表「・吉」、手機標題斷字、比較表裁切、圖卡網址、hover 底色。</div>
+</section>
+
+<section>
   <h2>沿用原則（v1–v3 全數繼承）</h2>
   <p class="note" style="font-size:.9375rem;color:var(--ink)">不合成單一總分；每條規則出處寫進資料檔 <code>source</code> 欄位並於「資料來源」呈現；流派衝突不擅自調和；引擎純函式；罕字與範圍外據實回報不猜；GPLv2。</p>
 </section>
@@ -244,6 +258,9 @@ td:first-child{white-space:nowrap;font-weight:600}
       <tr><td>UI 修正第四輪（09-13 追加）</td><td>有箭頭的摺疊列</td><td>比較表裁切；圖卡網址＋小瑕疵；先收工</td></tr>
       <tr><td>摺疊列框線（09-13 追加）</td><td>兩者都用分隔線</td><td>只拿掉資料來源內框；框都保留只加箭頭</td></tr>
       <tr><td>生肖忌字摺疊（09-13 追加）</td><td>加小箭頭、維持文字樣式</td><td>改成同一個整列元件；不動</td></tr>
+      <tr><td>UI 修正第五輪（09-14 追加）</td><td>筆畫組展開區降噪</td><td>拿掉列表「・吉」＋標題斷字；比較表裁切；先收工</td></tr>
+      <tr><td>展開區歸屬線（09-15 追加）</td><td>中性灰 neutral</td><td>磚紅 accent；只加底色</td></tr>
+      <tr><td>忌字說明去重（09-15 追加）</td><td>原因移到清單頂端講一次</td><td>拿掉逐字說明清單；不動</td></tr>
     </tbody>
   </table>
   </div>
