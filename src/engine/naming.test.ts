@@ -203,6 +203,19 @@ describe('candidatesFor（生肖喜忌合併，SPEC-v3 #7、#9）', () => {
     }
   });
 
+  it('avoidRadicals 依生肖順序列出命中的忌用字根，與 judgeChars 一致（SPEC-v4 #57）', () => {
+    const animals = ['馬', '羊'] as const;
+    for (const c of candidatesFor(10, [...animals])) {
+      expect(c.avoidRadicals.map((x) => x.animal)).toEqual([...animals]);
+      c.avoidRadicals.forEach((x) => {
+        expect(x.radicals).toEqual(judgeChars(x.animal, [c.char])[0]!.avoidRadicals);
+      });
+    }
+    const single = candidatesFor(10, ['馬']).filter((c) => c.verdict === '忌');
+    expect(single.length).toBeGreaterThan(0);
+    for (const c of single) expect(c.avoidRadicals[0]!.radicals.length).toBeGreaterThan(0);
+  });
+
   it('zodiacReasons 供兩生肖對照的說理', () => {
     const r = zodiacReasons('馬');
     expect(r.likeReason.length).toBeGreaterThan(0);

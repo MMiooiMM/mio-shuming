@@ -1017,9 +1017,47 @@ select:focus-visible {
   font-weight: 600;
 }
 
+/* 展開區（SPEC-v4 #54–#56）：淡底＋中性左線表示「屬於上面那一列」。不用磚紅——
+   磚紅與凶／忌同色相，名詞說明框也已經是淡底＋磚紅左線。 */
 .combo__body {
-  padding: 0.6rem 0.7rem 0.8rem;
+  padding: 12px 12px 16px 14px;
   border-top: 1px solid var(--line);
+  border-left: 2px solid var(--neutral);
+  background: var(--note-bg);
+}
+
+/* 五格在展開區內去框改分隔線；分析頁共用 .grid-item，選擇器必須限定在展開區。 */
+.combo__body .grids {
+  gap: 0;
+}
+
+.combo__body .grid-item {
+  border: 0;
+  border-radius: 0;
+  padding: 0.6rem 0;
+}
+
+.combo__body .grid-item + .grid-item {
+  border-top: 1px solid var(--line);
+}
+
+.combo__body > .notes {
+  margin-top: 12px;
+}
+
+.combo__body > .cand-pos:first-of-type {
+  margin-top: 16px;
+}
+
+.avoid-why__reason {
+  color: var(--ink);
+}
+
+/* 「目前搭配」上方的虛線：--line 疊在展開區淡底上只剩 1.2:1（深色 1.14:1），等於消失。
+   改用 --neutral 讓操作列維持獨立（WCAG 1.4.11 非文字對比 ≥ 3:1）。 */
+.combo__body .compose {
+  margin-top: 16px;
+  border-top-color: var(--neutral);
 }
 
 /* 候選字 chips */

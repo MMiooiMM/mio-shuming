@@ -220,6 +220,25 @@ function candidateChip(c: NamingCandidate, key: string, pos: number): string {
     title="${esc(title)}">${esc(c.char)}<small>${esc(c.element ?? '？')}</small></button>`;
 }
 
+/**
+ * 忌字清單（SPEC-v4 #57）：原因每隻生肖只列一次，逐字只列命中的字根。
+ * 臨界期兩肖並列時，逐字依生肖分列；該肖沒命中就不列，不寫「未見」湊數。
+ */
+function avoidWhy(avoid: NamingCandidate[]): string {
+  const animals = avoid[0]?.avoidRadicals.map((x) => x.animal) ?? [];
+  const multi = animals.length > 1;
+  const reasons = animals.map(
+    (a) => `<li class="avoid-why__reason"><strong>屬${esc(a)}之忌用</strong>：${esc(zodiacReasons(a).avoidReason)}</li>`,
+  );
+  const chars = avoid.map((c) => {
+    const parts = c.avoidRadicals
+      .filter((x) => x.radicals.length)
+      .map((x) => `${multi ? `${x.animal}・` : ''}含「${x.radicals.join('、')}」字根`);
+    return `<li>${esc(c.char)}：${esc(parts.join('；'))}</li>`;
+  });
+  return reasons.join('') + chars.join('');
+}
+
 function candidateBlock(
   key: string,
   pos: number,
@@ -242,9 +261,7 @@ function candidateBlock(
           ? `<details class="cand-avoid">
               <summary>顯示生肖忌字（${avoid.length} 字）</summary>
               <div class="chips">${avoid.map((c) => candidateChip(c, key, pos)).join('')}</div>
-              <ul class="notes">${avoid
-                .map((c) => `<li>${esc(c.explanations.join('；'))}</li>`)
-                .join('')}</ul>
+              <ul class="notes avoid-why">${avoidWhy(avoid)}</ul>
             </details>`
           : ''
       }

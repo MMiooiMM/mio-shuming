@@ -204,6 +204,11 @@ export interface NamingCandidate {
   verdict: CharVerdict['verdict'];
   /** 各生肖的判定原文，依 animals 順序。 */
   explanations: string[];
+  /**
+   * 各生肖命中的忌用字根，依 animals 順序（SPEC-v4 #57）。畫面據此把原因只列一次、
+   * 逐字只列字根；原文仍在 explanations。
+   */
+  avoidRadicals: { animal: Animal; radicals: string[] }[];
 }
 
 /**
@@ -226,6 +231,7 @@ export function candidatesFor(strokes: number, animals: Animal[]): NamingCandida
       element: charElementOf(char),
       verdict,
       explanations: perAnimal.map((v) => v.explanation),
+      avoidRadicals: perAnimal.map((v, i) => ({ animal: animals[i]!, radicals: v.avoidRadicals })),
     };
   });
 }
